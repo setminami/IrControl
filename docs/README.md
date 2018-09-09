@@ -36,7 +36,7 @@ Release:	9.4
 Codename:	stretch
 ```
 
-#### circuit
+#### circuit diagram
 ![](./img/irc_pi_schem.png)
 
 #### /boot/config.txt (see also. environments/boot/config.txt l.51)
@@ -48,3 +48,6 @@ dtoverlay=lirc-rpi:gpio_out_pin=25,gpio_in_pin=24,gpio_in_pull=up,invert=on
 I use a ready-made ledlight with RGB Infra-red remote controller by 24Key, because a number of ledlights can be controlled at the same time very simply.<br><br>
 The docs are written for use like https://www.led-paradise.com/product/1301.<br><br>
 Why? Many cheap RGB controller (maybe chinese) have same IR signal, and they are cheaper than wifi or BT's similar products.
+
+#### appearance
+<img src="./img/appearance.png" alt="for examples" width="500">
