@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-# this made for < python3.6
+# this made for  python3.5.3
 
-import pycurl, json, pytz, dateutil.parser
+import sys, pycurl, json, pytz, dateutil.parser
 from io import BytesIO
 from datetime import datetime, timedelta
-
+if sys.version_info.major == 3 and sys.version_info.minor < 6:
+    from fstrings import f
 
 class WeatherInfo(object):
 
@@ -34,9 +35,12 @@ class WeatherInfo(object):
         return dateutil.parser.parse(utcstr).astimezone(self.TZ)
 
     def _recallAPI(self, f):
-        if (not hasattr(self, 'fetched_time')) or (hasattr(self, 'fetched_time') and \
-            datetime.now() > (self.fetched_time + timedelta(minutes=10))): f()
+        if (not hasattr(self, 'fetched_time')) or \
+            (hasattr(self, 'fetched_time') and \
+            datetime.now() > (self.fetched_time + timedelta(minutes=self.PARAMS['update_freq_min']))): f()
 
+    # see also. ledlight.yml.TIMESHFTS
+    # sunrise-sunset.org
     @property
     def sunrise(self): # consider other services fortunely
         self._recallAPI(self.sunlights)
@@ -69,3 +73,8 @@ class WeatherInfo(object):
         self._recallAPI(self.sunlights)
         return (self._convByTZ(self._sunlights['results']['astronomical_twilight_begin']),
                 self._convByTZ(self._sunlights['results']['astronomical_twilight_end']))
+
+    # the repo calculated properties
+    @property
+    def midnight(self):
+        astro_begin, astro_end = self.astronomical_tw

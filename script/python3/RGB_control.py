@@ -2,11 +2,14 @@
 # -*- coding: utf-8 -*-
 # this made for python3
 
-import os, argparse
+import os, sys, argparse
 from ruamel.yaml import YAML
 
 from timer import LEDLightDayTimer
 from remote import Remote
+
+if sys.version_info.major == 3 and sys.version_info.minor < 6:
+    from fstrings import f
 
 VERSION = "1.0"
 
@@ -20,23 +23,31 @@ class RGBControl(object):
         if __name__ == '__main__':
             self.ARGS = RGBControl.ArgParser()
         with open(self.ARGS.configure if setting is None else setting, "r") as f:
-          self.PARAMS = yaml.load(f)
+          params = yaml.load(f)
+          self.PARAMS = self.expand_env(params)
         timer.timezone = self.PARAMS['TIMEZONE']
         self.myTimer = timer
-        self.remotes = {:}
+        self.remotes = {}
         for x in self.PARAMS['KEYCODE']:
             remote = Remote()
-            self.remotes[x['name']] Remote()
             remote.setupKeycode(x)
+            self.remotes[x['name']] = remote
 
-        self.weather = WeatherInfo(self.PARAMS['SUNLIGHT_STATUS_API'])
+    def expand_env(self, params):
+        for key, item in params:
+            if isinstance(item, ordereddict):
+                expand_env(item)
+            elif isinstance(item, str):
+                params[key] = os.environ[f'{item}']
+        return params
 
     def organize_settings(self):
         """
         organize yaml settings
         """
+        self.rgb_light = self.remotes['ledlight']
+        self.weather = WeatherInfo(self.PARAMS['SUNLIGHT_STATUS_API'], self.PARAMS['TIMEZONE'])
         today_sunrise, today_sunset = self.weather.sunrize, self.weather.sunset
-
 
     @staticmethod
     def ArgParser():
