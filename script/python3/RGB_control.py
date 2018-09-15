@@ -8,8 +8,6 @@ from ruamel.yaml import YAML
 from timer import LEDLightDayTimer
 from remote import Remote
 
-if sys.version_info.major == 3 and sys.version_info.minor < 6:
-    from fstrings import f
 
 VERSION = "1.0"
 
@@ -34,11 +32,11 @@ class RGBControl(object):
             self.remotes[x['name']] = remote
 
     def expand_env(self, params):
-        for key, item in params:
-            if isinstance(item, ordereddict):
+        for key, item in params.items():
+            if isinstance(item, dict):
                 expand_env(item)
             elif isinstance(item, str):
-                params[key] = os.environ[f'{item}']
+                params[key] = os.environ[f('{item}')]
         return params
 
     def organize_settings(self):

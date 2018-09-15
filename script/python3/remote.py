@@ -2,8 +2,6 @@
 # this made for python3
 
 from itertools import product
-if sys.version_info.major == 3 and sys.version_info.minor < 6:
-    from fstrings import f
 
 class Remote(object):
 
@@ -36,5 +34,5 @@ class Remote(object):
         self._keys = []
         check = lambda dict, key, default_val: dict[key] if key in dict.keys() else default_val
         for i in range(val['row_max']):
-            self._keys.append([check(val, f'{x}_{y}', self.NOTAVAILABLE) \
+            self._keys.append([check(val, f('{x}_{y}'), self.NOTAVAILABLE) \
             for x, y in list(product([i], list(range(val['col_max']))))])

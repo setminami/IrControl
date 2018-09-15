@@ -18,7 +18,7 @@ class WeatherInfo(object):
         url_path = 'https://api.sunrise-sunset.org/json'
         # cannot use with as yield?
         curl = pycurl.Curl()
-        curl.setopt(pycurl.URL, url_path + f'?lat={lat}&lng={lng}&formatted=0&date={today}')
+        curl.setopt(pycurl.URL, url_path + f('?lat={lat}&lng={lng}&formatted=0&date={today}'))
         b = BytesIO()
         curl.setopt(pycurl.WRITEFUNCTION, b.write)
         curl.setopt(pycurl.VERBOSE, True)

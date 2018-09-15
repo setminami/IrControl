@@ -4,8 +4,6 @@
 from threading import Thread
 from datetime import datetime
 import sys, logging, pytz
-if sys.version_info.major == 3 and sys.version_info.minor < 6:
-    from fstrings import f
 
 class LEDLightDayTimer(Thread):
     """ a simple day timer """
@@ -15,7 +13,7 @@ class LEDLightDayTimer(Thread):
         return self._TZ
     @timezone.setter
     def timezone(self, val):
-        assert(val in pytz.all_timezones, "Timezone not valid.")
+        assert val in pytz.all_timezones, "Timezone not valid."
         self._TZ = pytz.timezone(val)
 
     def regist(self, f):
@@ -30,7 +28,7 @@ class LEDLightDayTimer(Thread):
         just time or passed : return True
         not passed: return False
         """
-        assert(time.count(':') == 1, f'Illegal time format Found. {time}')
+        assert time.count(':') == 1, f('Illegal time format Found. {time}')
         h, m = time.split(':')
         now = datetime.now(self._TZ)
         check = datetime(*(now.year, now.month, now.day, h, m, 0, 0, self._TZ))
