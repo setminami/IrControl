@@ -5,7 +5,7 @@ from itertools import product
 
 class Remote(object):
 
-    NOTAVAILABLE = 'n/a'
+    NOTAVAILABLE = 'NA'
     def setupKeycode(self, keycodes):
         self.name = keycodes['name']
         self.keys = keycodes
@@ -31,10 +31,8 @@ class Remote(object):
         _keys must be constructed as 2x2 list.
         see also. KEYCODE  0_0, 0_1, .... in yaml
         """
-        print(val)
         self._keys = []
         check = lambda dict, key, default_val: dict[key] if key in dict.keys() else default_val
         for i in range(val['row_max']):
             self._keys.append([check(val, '%d_%d'%(x, y), self.NOTAVAILABLE) \
             for x, y in list(product([i], list(range(val['col_max']))))])
-        print(self._keys)

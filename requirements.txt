@@ -1,2 +1,9 @@
 pytz
 ruamel.yaml
+
+# pycurl # might be not able to install pycurl because of openssl then, commentout this line and try below
+#  if macOS, run. ruby -e "$(/usr/bin/curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+# check curl-config path and
+# export PYCURL_CURL_CONFIG=/path/to/your/curl-config
+# pip install --compile pycurl
+# if raspi stretch at least, run 'sudo pip install pycurl' simply.

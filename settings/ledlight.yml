@@ -22,6 +22,14 @@ KEYCODE:
 
 # When you wanna search selectable TIMEZONE, run python -c "import pytz;[print(tz) for tz in pytz.all_timezones]"
 TIMEZONE: 'Asia/Tokyo'
+SUNLIGHT_STATUS_API:
+  # rewrite your openweathermap's API key
+  your_key: XXXX
+  location: # the sample is Tokyo
+    latitude: 35.658581
+    longitude: 139.745433
+  update_time: 00:05
+
 LINEAR: False # (no implementation) If True, time settings are auto calculated linearly between TIMESHIFTS.
 # a time shift set. The sample Sunrise/set time based on https://www.motohasi.net/SunriseSunset/WorldSunJC.php
 TIMESHFTS:

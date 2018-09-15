@@ -23,14 +23,20 @@ class RGBControl(object):
           self.PARAMS = yaml.load(f)
         timer.timezone = self.PARAMS['TIMEZONE']
         self.myTimer = timer
-        self.remote = Remote()
-        self.remote.setupKeycode(self.PARAMS['KEYCODE'][0])
+        self.remotes = {:}
+        for x in self.PARAMS['KEYCODE']:
+            remote = Remote()
+            self.remotes[x['name']] Remote()
+            remote.setupKeycode(x)
+
+        self.weather = WeatherInfo(self.PARAMS['SUNLIGHT_STATUS_API'])
 
     def organize_settings(self):
         """
         organize yaml settings
         """
-        self.PARAMS['KEYCODE']
+        today_sunrise, today_sunset = self.weather.sunrize, self.weather.sunset
+
 
     @staticmethod
     def ArgParser():
