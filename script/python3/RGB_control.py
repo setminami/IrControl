@@ -2,16 +2,18 @@
 # -*- coding: utf-8 -*-
 # this made for python3
 
-import os, sys, argparse
-import yaml
+import os, sys, argparse, yaml
 
-from timer import LEDLightDayTimer
-from remote import Remote
+from util.env import expand_env
+from util.timer import LEDLightDayTimer
+from util.remote import Remote
 
 VERSION = "1.0"
 
 _BASE = os.path.dirname(os.path.abspath(__file__))
 SETTING = os.path.normpath(os.path.join(_BASE, '../../settings/ledlight.yml'))
+
+DEBUG = True
 
 class RGBControl(object):
 
@@ -25,8 +27,9 @@ class RGBControl(object):
 
         with open(config_path, "r") as f:
           params = yaml.load(f)
-          self.PARAMS = self.expand_env(params)
-        print(self.PARAMS)
+
+          self.PARAMS = expand_env(params, DEBUG)
+        print('>> {}'.format(self.PARAMS))
         timer.timezone = self.PARAMS['TIMEZONE']
         self.myTimer = timer
         self.remotes = {}
@@ -34,27 +37,6 @@ class RGBControl(object):
             remote = Remote()
             remote.setupKeycode(x)
             self.remotes[x['name']] = remote
-
-    def expand_env(self, params):
-        for key, val in params.items():
-            print('try %s, %s'%(key, val))
-            if isinstance(val, dict):
-                print('ORDEREDDICT')
-                return self.expand_env(val)
-            elif isinstance(val, list):
-                print('LIST')
-                return [self.expand_env(x) for x in val]
-            elif isinstance(val, str) and (val.startswith('${') \
-                    and val.endswith('}')):
-                print('LEAF')
-                env_key = val[2:-1]
-                if env_key in os.environ.keys():
-                    params[key] = os.environ[val[2:-1]]
-                    msg = f('Overwrite env value {val} = {params[key]}')
-                    print(msg)
-                return params
-            else:
-                print('?? TYPE is %s'%type(val))
 
     def organize_settings(self):
         """

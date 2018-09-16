@@ -4,8 +4,7 @@
 from threading import Thread
 from datetime import datetime
 import sys, logging, pytz
-from fstrings import f # generally raspi python3 < 3.6
-# When python updated over 3.6.0, you can replace f('...') to f'...', but this replaces dont have to do.
+
 
 class LEDLightDayTimer(Thread):
     """ a simple day timer """
