@@ -7,13 +7,14 @@ import os, sys, argparse, yaml
 from util.env import expand_env
 from util.timer import LEDLightDayTimer
 from util.remote import Remote
+from util.weather_info import WeatherInfo
 
 VERSION = "1.0"
 
 _BASE = os.path.dirname(os.path.abspath(__file__))
 SETTING = os.path.normpath(os.path.join(_BASE, '../../settings/ledlight.yml'))
 
-DEBUG = True
+DEBUG = False
 
 class RGBControl(object):
 
@@ -29,22 +30,24 @@ class RGBControl(object):
           params = yaml.load(f)
 
           self.PARAMS = expand_env(params, DEBUG)
-        print('>> {}'.format(self.PARAMS))
         timer.timezone = self.PARAMS['TIMEZONE']
         self.myTimer = timer
         self.remotes = {}
         for x in self.PARAMS['KEYCODE']:
             remote = Remote()
-            remote.setupKeycode(x)
+            remote.setup_ir_keycodes(x)
             self.remotes[x['name']] = remote
+        self.rgb_light = self.remotes['ledlight']
+        self.weather = WeatherInfo(self.PARAMS['SUNLIGHT_STATUS_API'],
+                                    self.PARAMS['TIMESHFTS'],
+                                    self.PARAMS['TIMEZONE'])
 
     def organize_settings(self):
         """
         organize yaml settings
         """
-        self.rgb_light = self.remotes['ledlight']
-        self.weather = WeatherInfo(self.PARAMS['SUNLIGHT_STATUS_API'], self.PARAMS['TIMEZONE'])
-        today_sunrise, today_sunset = self.weather.sunrize, self.weather.sunset
+        schedules = self.weather.timeshift_today
+        print(schedules)
 
     @staticmethod
     def ArgParser():
@@ -62,4 +65,5 @@ class RGBControl(object):
 
 if __name__ == '__main__':
     ins = RGBControl(LEDLightDayTimer())
+    ins.organize_settings()
     pass

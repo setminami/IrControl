@@ -50,7 +50,8 @@ TIMESHFTS:
       - command: off
         remote: ledlight
         repeat: 3
-  astronomical_tw:
+
+  astronomical_twilight:
     schedule:
       time: astronomical_tw.begin
       relative_time_sec: 0
@@ -61,7 +62,8 @@ TIMESHFTS:
       - command: b0
         remote: ledlight
         repeat: 3
-  nautical_tw:
+
+  nautical_twilight:
     schedule:
       time: nautical_tw.begin
       relative_time_sec: 0
@@ -72,7 +74,8 @@ TIMESHFTS:
       - command: b1
         remote: ledlight
         repeat: 3
-  civil_tw:
+
+  civil_twilight:
     schedule:
       time: civil_tw.begin
       relative_time_sec: 0
@@ -86,7 +89,8 @@ TIMESHFTS:
       - command: b2
         remote: ledlight
         repeat: 3
-  sunrize:
+
+  sunrise:
     schedule:
       time: sunrise
       relative_time_sec: 0
@@ -103,6 +107,7 @@ TIMESHFTS:
       - remote: IFTTT
         command: weaklight_on
         repeat: 1 # because IFTTT is on TCP
+
   solar_noon:
     schedule:
       time: solar_noon
@@ -114,6 +119,7 @@ TIMESHFTS:
       - remote: IFTTT
         command: noonlight_on
         repeat: 1 # because IFTTT is on TCP
+
   evening:
     schedule:
       time: sunset
@@ -128,6 +134,7 @@ TIMESHFTS:
       - remote: IFTTT
         command: noonlight_off
         repeat: 1 # because IFTTT is on TCP
+
   sunset:
     schedule:
       time: sunset
@@ -136,6 +143,7 @@ TIMESHFTS:
       - command: b4
         remote: ledlight
         repeat: 3
+
   twilight:
     schedule:
       time: civil_tw.end
@@ -144,6 +152,7 @@ TIMESHFTS:
       - command: b1
         remote: ledlight
         repeat: 3
+
   moon:
     schedule:
       time: astronomical_tw.end
