@@ -3,11 +3,14 @@
 # this made for python3
 
 import os, sys, argparse, yaml, subprocess as sp
+from datetime import datetime
 
 from util.env import expand_env
 from util.timer import LEDLightDayTimer
 from util.remote import Remote
 from util.weather_info import WeatherInfo
+
+from time import sleep
 
 VERSION = "1.0"
 
@@ -40,7 +43,11 @@ class RGBControl(object):
             remote.setup_ir_keycodes(x)
             self.remotes[x['name']] = remote
         timer.remote = self.remotes['ledlight']
-        self.myTimer = timer
+        self._timer = timer
+
+    @property
+    def timer(self):
+        return self._timer
 
     def update_settings(self):
         """
@@ -51,13 +58,10 @@ class RGBControl(object):
           params = yaml.load(f)
           self.PARAMS = expand_env(params, DEBUG)
 
-        self.myTimer.weather = WeatherInfo(self.PARAMS['SUNLIGHT_STATUS_API'],
+        self._timer.weather = WeatherInfo(self.PARAMS['SUNLIGHT_STATUS_API'],
                                             self.PARAMS['TIMESHIFTS'],
                                             self.PARAMS['TIMEZONE'])
-        # NOTE: overwrite onetime per day
-        self.myTimer.update_time = self.PARAMS['UPDATE_TIME']
-        self.myTimer.do_schedule()
-        pass
+        self._timer.do_schedule()
 
     @staticmethod
     def ArgParser():
@@ -75,5 +79,11 @@ class RGBControl(object):
 
 if __name__ == '__main__':
     ins = RGBControl(LEDLightDayTimer())
-    ins.update_settings()
+    while True:
+        if ins.timer.is_usedup():
+            now = datetime.now(ins.timer.timezone)
+            print('Schedules set at %s:'%now.strftime('%Y-%d-%m %H:%M:%S%z'))
+            ins.update_settings()
+        sleep(5) # check per 5 min
+        print('.', end='')
     pass

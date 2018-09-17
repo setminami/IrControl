@@ -19,5 +19,4 @@ class Schedule(object):
 
     @property
     def operations(self):
-        print(self._operations)
         return [RemoteArgs(x) for x in self._operations]

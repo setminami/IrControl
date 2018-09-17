@@ -57,6 +57,8 @@ class RemoteArgs(object):
             command: * (str)
             repeat: (int)
     """
+    def __str__(self):
+        return '{}({})'.format(__class__.__name__, self.__dict__)
 
     def __init__(self, item):
         self._funcname = item['remote']

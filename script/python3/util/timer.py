@@ -19,6 +19,9 @@ class LEDLightDayTimer(object):
     def __init__(self):
         self._sched = scheduler(time.time, time.sleep)
 
+    def is_usedup(self):
+        return self._sched.empty()
+
     @property
     def timezone(self):
         assert hasattr(self, '_TZ')
@@ -28,16 +31,6 @@ class LEDLightDayTimer(object):
     def timezone(self, val):
         assert val in pytz.all_timezones, "Timezone not valid."
         self._TZ = pytz.timezone(val)
-
-    @property
-    def update_time(self):
-        assert hasattr(self, '_update')
-        return self._update
-    @update_time.setter
-    def update_time(self, val: str):
-        assert len(val.split(':')) == 2
-        now = datetime.now(self.timezone)
-        return datetime.strptime(now.strftime('%Y-%m-%d %%s:00%z')%val, '%Y-%m-%d %H:%M:%S%z')
 
     @property
     def weather(self):
@@ -70,13 +63,11 @@ class LEDLightDayTimer(object):
         """ reset event queue and run """
         if not self._sched.empty():
             [self._sched.cancel(ev) for ev in self._sched.queue]
-
-        print('Scheduled:')
         for val in self.schedules.values():
-            print('fire @ {}: {} {} {}'.format(val.time.strftime('%Y-%m-%d %H:%M%S%z'),
-                                                val.name, val.operations))
-            self._sched.enter((val.time - datetime.now(self._TZ)).seconds,
-                                1 if val.name == 'IFTTT' else 2,
+            print('{} will fire @ {}: {}'.format(val.name,
+                                                val.time.strftime('%Y-%m-%d %H:%M:%S%z'),
+                                                val.operations))
+            self._sched.enterabs(time.mktime(val.time.timetuple()), 2,
                                 self._do, argument=(val.operations, self.remote))
         self._sched.run()
 
