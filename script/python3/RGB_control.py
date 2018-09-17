@@ -3,26 +3,30 @@
 # this made for python3
 
 import os, sys, argparse
-from ruamel.yaml import YAML
+import yaml
 
 from timer import LEDLightDayTimer
 from remote import Remote
-
 
 VERSION = "1.0"
 
 _BASE = os.path.dirname(os.path.abspath(__file__))
 SETTING = os.path.normpath(os.path.join(_BASE, '../../settings/ledlight.yml'))
-yaml = YAML()
 
 class RGBControl(object):
 
     def __init__(self, timer, setting=None):
         if __name__ == '__main__':
             self.ARGS = RGBControl.ArgParser()
-        with open(self.ARGS.configure if setting is None else setting, "r") as f:
+            config_path = self.ARGS.configure
+        else:
+            assert setting is not None
+            config_path = setting
+
+        with open(config_path, "r") as f:
           params = yaml.load(f)
           self.PARAMS = self.expand_env(params)
+        print(self.PARAMS)
         timer.timezone = self.PARAMS['TIMEZONE']
         self.myTimer = timer
         self.remotes = {}
@@ -32,12 +36,25 @@ class RGBControl(object):
             self.remotes[x['name']] = remote
 
     def expand_env(self, params):
-        for key, item in params.items():
-            if isinstance(item, dict):
-                expand_env(item)
-            elif isinstance(item, str):
-                params[key] = os.environ[f('{item}')]
-        return params
+        for key, val in params.items():
+            print('try %s, %s'%(key, val))
+            if isinstance(val, dict):
+                print('ORDEREDDICT')
+                return self.expand_env(val)
+            elif isinstance(val, list):
+                print('LIST')
+                return [self.expand_env(x) for x in val]
+            elif isinstance(val, str) and (val.startswith('${') \
+                    and val.endswith('}')):
+                print('LEAF')
+                env_key = val[2:-1]
+                if env_key in os.environ.keys():
+                    params[key] = os.environ[val[2:-1]]
+                    msg = f('Overwrite env value {val} = {params[key]}')
+                    print(msg)
+                return params
+            else:
+                print('?? TYPE is %s'%type(val))
 
     def organize_settings(self):
         """
