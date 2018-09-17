@@ -28,9 +28,10 @@ class WeatherInfo(object):
         try:
             curl.perform()
             self.fetched_time = datetime.now()
-            self._sunlights = json.loads(b.getvalue())
+            self._sunlights = json.loads(b.getvalue().decode('UTF-8'))
         except:
             traceback.print_exc()
+            exit(1)
         finally:
             curl.close()
 

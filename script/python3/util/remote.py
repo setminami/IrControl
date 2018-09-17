@@ -2,28 +2,35 @@
 # this made for python3
 
 from itertools import product
-import subprocess as ap
+import subprocess as sp
 
 class Remote(object):
-
     NOTAVAILABLE = 'NA'
+
+    def __init__(self, infrared_cmd, webhook_path, key):
+        self._ircmd, self._ifttt_path, self._ifttt_key = infrared_cmd, webhook_path, key
+
     def setup_ir_keycodes(self, keycodes):
         self.name = keycodes['name']
         self.keys = keycodes
 
-    def send_key(self, key, repeat=1):
-        sp.call('irsend -#%d SEND_ONCE ledlight %s'%(repeat, key), shell=True)
+    def send_IR_key(self, key, repeat=1):
+        sp.call('%s -#%d SEND_ONCE ledlight %s'%(self._ircmd, repeat, key), shell=True)
 
-    def ifttt(self, endpoint, repeat=1):
-        print('**** run {} {} ****'.format(endpoint, repeat))
+    def send_HTTP_trigger(self, endpoint, repeat=1):
+        ifttt_path = self._ifttt_path.format(endpoint, self._ifttt_key)
+        print('**** run {} {} for {} ****'.format(endpoint, repeat, ifttt_path))
+        for i in range(repeat):
+            cmd = 'curl %s'%ifttt_path
+            print('try %d: %s'%(i, cmd))
+            # noneed to use pycurl
+            sp.call(cmd, shell=True)
 
     @property
-    def name(self):
-        return self._name
+    def name(self): return self._name
 
     @name.setter
-    def name(self, val):
-        self._name = val
+    def name(self, val): self._name = val
 
     @property
     def keys(self, position: tuple):
@@ -58,10 +65,8 @@ class RemoteArgs(object):
     @property
     def name(self):
         """ I know connectors between yaml and Remote methods. """
-        if self._funcname == 'ledlight':
-            return 'send_key'
-        elif self._funcname == 'IFTTT':
-            return 'connect_ifttt'
+        return {'ledlight': 'send_IR_key',
+                'IFTTT': 'send_HTTP_trigger'}[self._funcname]
 
     @property
     def args(self):
@@ -69,4 +74,6 @@ class RemoteArgs(object):
 
     def do(self, instance):
         assert isinstance(instance, Remote)
+
+        print('RemoteArgs.do ran : try to eval Remote.{}{}'.format(self.name, self.args))
         eval('instance.{}{}'.format(self.name, self.args))

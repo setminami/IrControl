@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # this made for python3
 
-import os, sys, argparse, yaml
+import os, sys, argparse, yaml, subprocess as sp
 
 from util.env import expand_env
 from util.timer import LEDLightDayTimer
@@ -33,8 +33,10 @@ class RGBControl(object):
         timer.timezone = self.PARAMS['TIMEZONE']
         self.remotes = {}
         # restrict update lircd for runnning
+        irsend = sp.check_output(['which', self.PARAMS['IRSEND_CMD']]).decode('utf-8')[:-1]
+        ifttt = self.PARAMS['IFTTT']
         for x in self.PARAMS['KEYCODE']:
-            remote = Remote()
+            remote = Remote(irsend, ifttt['path'], ifttt['key'])
             remote.setup_ir_keycodes(x)
             self.remotes[x['name']] = remote
         timer.remote = self.remotes['ledlight']

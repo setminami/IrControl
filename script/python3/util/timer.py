@@ -69,14 +69,15 @@ class LEDLightDayTimer(object):
     def do_schedule(self):
         """ reset event queue and run """
         if not self._sched.empty():
-            print('reset scheduled queue. \n{}'.format(self._sched.queue))
             [self._sched.cancel(ev) for ev in self._sched.queue]
-        print(self.schedules)
+
+        print('Scheduled:')
         for val in self.schedules.values():
+            print('fire @ {}: {} {} {}'.format(val.time.strftime('%Y-%m-%d %H:%M%S%z'),
+                                                val.name, val.operations))
             self._sched.enter((val.time - datetime.now(self._TZ)).seconds,
                                 1 if val.name == 'IFTTT' else 2,
                                 self._do, argument=(val.operations, self.remote))
-        print('{} were re-scheduled.'.format(self._sched.queue))
         self._sched.run()
 
     def _do(self, ops, ins):

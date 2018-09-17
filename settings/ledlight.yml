@@ -1,5 +1,6 @@
 # RGB keys presents as grid ref docs/img/remotecontroller.png in this file.
 # like, (0, 0) points ON Key, ....(1,3) points R Key
+IRSEND_CMD: irsend # Donot mind that have to specify the path to command or not.
 KEYCODE: # can select fix name ledlight as rgb ledlight
   - name: ledlight
     # describe registered name in [remote].lircd.conf strictly as remote controller grid.
@@ -32,7 +33,10 @@ SUNLIGHT_STATUS_API:
   cache_update_freq_min: 30
 
 IFTTT:
-  url_path: https://maker.ifttt.com/trigger/{service_name}/with/key/{key}
+  # Make you own IFTTT Maker webhook.
+  # And the hookname must be matched with TIMESHIFTS.xxx.operations.command name.
+  # Donot edit path,  first {} and second {} are special positional arg
+  path: https://maker.ifttt.com/trigger/{}/with/key/{}
   # IMPORTANT: Please describe your correct webhook key
   # case 1. do "export $IFTTT_KEY=YOURKEY" somewhere, YOURKEY is described on your IFTTT webhook (documentations)menu,
   # write above on your env file (e.g., ~/.bashrc)
@@ -146,6 +150,9 @@ TIMESHIFTS:
       - command: b4
         remote: ledlight
         repeat: 3
+      - remote: IFTTT
+        command: weaklight_off
+        repeat: 1 # because IFTTT is on TCP
 
   twilight:
     schedule:
