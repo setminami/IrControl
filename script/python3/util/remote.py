@@ -12,7 +12,7 @@ class Remote(object):
         self.keys = keycodes
 
     def send_key(self, key, repeat=1):
-        cp.call('irsend -#%d SEND_ONCE ledlight %s'%(repeat, key), shell=True)
+        sp.call('irsend -#%d SEND_ONCE ledlight %s'%(repeat, key), shell=True)
 
     def ifttt(self, endpoint, repeat=1):
         print('**** run {} {} ****'.format(endpoint, repeat))
@@ -51,7 +51,7 @@ class RemoteArgs(object):
             repeat: (int)
     """
 
-    def __init__(self, **item):
+    def __init__(self, item):
         self._funcname = item['remote']
         self._args = (item['command'], item['repeat'])
 
@@ -69,4 +69,4 @@ class RemoteArgs(object):
 
     def do(self, instance):
         assert isinstance(instance, Remote)
-        eval('instance.%s%s'.format(self.name, self.args))
+        eval('instance.{}{}'.format(self.name, self.args))

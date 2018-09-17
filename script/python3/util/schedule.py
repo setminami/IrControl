@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 # this made for  python3.5.3
 
-import pycurl
 from .remote import RemoteArgs
 
 class Schedule(object):
@@ -20,5 +19,5 @@ class Schedule(object):
 
     @property
     def operations(self):
-        # TODO: interpret ledlight and IFTTT as Remote args
-        return [RemoteArgs(x) for x in self._operation]
+        print(self._operations)
+        return [RemoteArgs(x) for x in self._operations]

@@ -2,6 +2,7 @@
 # this made for  python3.5.3
 
 import sys, pycurl, json, pytz, dateutil.parser
+import traceback
 from io import BytesIO
 from datetime import datetime, timedelta
 
@@ -11,7 +12,7 @@ class WeatherInfo(object):
 
     def __init__(self, setting, schedule, tz):
         self.PARAMS = {'latitude': setting['location']['latitude'], 'longitude': setting['location']['longitude']}
-        self.update_min = setting['update_freq_min']
+        self.update_min = setting['cache_update_freq_min']
         self.TZ = pytz.timezone(tz)
         self.TIMESHIFTS = schedule
 
@@ -28,8 +29,8 @@ class WeatherInfo(object):
             curl.perform()
             self.fetched_time = datetime.now()
             self._sunlights = json.loads(b.getvalue())
-        except Exception as e:
-            return str(e)
+        except:
+            traceback.print_exc()
         finally:
             curl.close()
 
@@ -60,15 +61,18 @@ class WeatherInfo(object):
             try:
                 start_time = eval('self._%s'%time[0])[idx]
             except:
-                print('Couldnt eval @ [self._%s'%time[0])
+                traceback.print_exc()
+                print('Couldnt eval @ [self._%s]'%time[0])
                 exit(1)
         elif len(time) == 1:
             try:
                 start_time = eval('self._%s'%time[0])
-            except:
-                print('Couldnt eval @ [self._%s'%time[0])
+            except Exception as e:
+                traceback.print_exc()
+                print('Couldnt eval @ [self._%s]'%(time[0]))
                 exit(1)
         else:
+            traceback.print_exc()
             print('TIMESHIFTS.schedule.time settings incorrect. @%s'%(item_name))
             exit(1)
         return start_time + timedelta(seconds=rel)

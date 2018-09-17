@@ -21,33 +21,41 @@ class RGBControl(object):
     def __init__(self, timer, setting=None):
         if __name__ == '__main__':
             self.ARGS = RGBControl.ArgParser()
-            config_path = self.ARGS.configure
+            self.config_path = self.ARGS.configure
         else:
             assert setting is not None
-            config_path = setting
+            self.config_path = setting
 
-        with open(config_path, "r") as f:
+        with open(self.config_path, "r") as f:
           params = yaml.load(f)
-
           self.PARAMS = expand_env(params, DEBUG)
+
         timer.timezone = self.PARAMS['TIMEZONE']
-        self.myTimer = timer
         self.remotes = {}
+        # restrict update lircd for runnning
         for x in self.PARAMS['KEYCODE']:
             remote = Remote()
             remote.setup_ir_keycodes(x)
             self.remotes[x['name']] = remote
-        self.rgb_light = self.remotes['ledlight']
-        self.weather = WeatherInfo(self.PARAMS['SUNLIGHT_STATUS_API'],
-                                    self.PARAMS['TIMESHFTS'],
-                                    self.PARAMS['TIMEZONE'])
+        timer.remote = self.remotes['ledlight']
+        self.myTimer = timer
 
-    def organize_settings(self):
+    def update_settings(self):
         """
         organize yaml settings
+        An item which expected realtime update, describe here istead of __init__
         """
-        schedules = self.weather.timeshift_today
-        print(schedules)
+        with open(self.config_path, "r") as f:
+          params = yaml.load(f)
+          self.PARAMS = expand_env(params, DEBUG)
+
+        self.myTimer.weather = WeatherInfo(self.PARAMS['SUNLIGHT_STATUS_API'],
+                                            self.PARAMS['TIMESHIFTS'],
+                                            self.PARAMS['TIMEZONE'])
+        # NOTE: overwrite onetime per day
+        self.myTimer.update_time = self.PARAMS['UPDATE_TIME']
+        self.myTimer.do_schedule()
+        pass
 
     @staticmethod
     def ArgParser():
@@ -65,5 +73,5 @@ class RGBControl(object):
 
 if __name__ == '__main__':
     ins = RGBControl(LEDLightDayTimer())
-    ins.organize_settings()
+    ins.update_settings()
     pass

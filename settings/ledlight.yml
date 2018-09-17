@@ -22,12 +22,14 @@ KEYCODE: # can select fix name ledlight as rgb ledlight
 
 # When you wanna search selectable TIMEZONE, run python -c "import pytz;[print(tz) for tz in pytz.all_timezones]"
 TIMEZONE: 'Asia/Tokyo'
+# time to update every day
+UPDATE_TIME: 00:05
+
 SUNLIGHT_STATUS_API:
   location: # the sample is Tokyo
     latitude: 35.658581
     longitude: 139.745433
-  update_time: 00:05
-  update_freq_min: 30
+  cache_update_freq_min: 30
 
 IFTTT:
   url_path: https://maker.ifttt.com/trigger/{service_name}/with/key/{key}
@@ -40,14 +42,15 @@ IFTTT:
 
 LINEAR: False # (no implementation) If True, time settings are auto calculated linearly between TIMESHIFTS.
 # ref. https://api-sunrise-sunset.org/ , each names of operation must be matched with WeatherInfo.properties (e.g., sunrise, sunset)
-TIMESHFTS:
+TIMESHIFTS:
   #
   midnight: # If you want to adjust set like below
     schedule:
       time: astronomical_tw.begin
       relative_time_sec: -7200 # -2h
     operations:
-      - command: off
+      # yaml in some condition, interpret on/off as boolean
+      - command: 'off'
         remote: ledlight
         repeat: 3
 
@@ -56,7 +59,7 @@ TIMESHFTS:
       time: astronomical_tw.begin
       relative_time_sec: 0
     operations:
-      - command: on
+      - command: 'on'
         remote: ledlight
         repeat: 3
       - command: b0
@@ -68,7 +71,7 @@ TIMESHFTS:
       time: nautical_tw.begin
       relative_time_sec: 0
     operations:
-      - command: on
+      - command: 'on'
         remote: ledlight
         repeat: 3
       - command: b1
@@ -80,7 +83,7 @@ TIMESHFTS:
       time: civil_tw.begin
       relative_time_sec: 0
     operations:
-      - command: on
+      - command: 'on'
         remote: ledlight
         repeat: 3
       - command: up
@@ -95,7 +98,7 @@ TIMESHFTS:
       time: sunrise
       relative_time_sec: 0
     operations:
-      - command: on
+      - command: 'on'
         remote: ledlight
         repeat: 3
       - command: up # up & down has 8 stages. 16 ensure minmax
