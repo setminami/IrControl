@@ -7,28 +7,35 @@ from io import BytesIO
 from datetime import datetime, timedelta
 
 from util.schedule import Schedule
+from util import module_logger
+
+DEBUG = True
 
 class WeatherInfo(object):
 
-    def __init__(self, setting, schedule, tz):
+    def __init__(self, day: datetime, setting, schedule, tz):
         self.PARAMS = {'latitude': setting['location']['latitude'], 'longitude': setting['location']['longitude']}
         self.update_min = setting['cache_update_freq_min']
         self.TZ = pytz.timezone(tz)
         self.TIMESHIFTS = schedule
+        self._day = day
+        self.logger = module_logger(__name__)
 
     def sunlights(self):
-        lat, lng, today = self.PARAMS['latitude'], self.PARAMS['longitude'], datetime.now().strftime('%Y-%m-%d')
+        lat, lng, today = self.PARAMS['latitude'], self.PARAMS['longitude'], self._day.strftime('%Y-%m-%d')
         url_path = 'https://api.sunrise-sunset.org/json'
         # cannot use with as yield?
         curl = pycurl.Curl()
         curl.setopt(pycurl.URL, url_path + '?lat=%s&lng=%s&formatted=0&date=%s'%(lat, lng, today))
         b = BytesIO()
         curl.setopt(pycurl.WRITEFUNCTION, b.write)
-        curl.setopt(pycurl.VERBOSE, True)
+        curl.setopt(pycurl.VERBOSE, DEBUG)
         try:
             curl.perform()
-            self.fetched_time = datetime.now()
             self._sunlights = json.loads(b.getvalue().decode('UTF-8'))
+            self.logger.debug(self._sunlights)
+            self.fetched_result = datetime.now() \
+                if self._sunlights['status'] == 'OK' else None # as success flag
         except:
             traceback.print_exc()
             exit(1)
@@ -36,12 +43,16 @@ class WeatherInfo(object):
             curl.close()
 
     def _convByTZ(self, utcstr):
+        self.logger.debug('call {}({})'.format(sys._getframe().f_code.co_name, utcstr))
+        self.logger.debug(self._sunlights)
         return dateutil.parser.parse(utcstr).astimezone(self.TZ)
 
     def _recallAPI(self, f):
-        if (not hasattr(self, 'fetched_time')) or \
-            (hasattr(self, 'fetched_time') and \
-            datetime.now() > (self.fetched_time + timedelta(minutes=self.update_min))): f()
+        if (not hasattr(self, 'fetched_result')) or \
+            (hasattr(self, 'fetched_result') and (self.fetched_result is None or \
+            datetime.now() > (self.fetched_result + timedelta(minutes=self.update_min)))):
+            f()
+        self.logger.debug('call {} : {}'.format(sys._getframe().f_code.co_name, self._sunlights))
 
     def _parse_schedule_items(self, item_name):
         """ calculate time for item_name from schedule settings """
@@ -79,9 +90,16 @@ class WeatherInfo(object):
         return start_time + timedelta(seconds=rel)
 
 
+    @property
+    def day(self): # day of the weather instance (hhmmss is no effect)
+        return self._day
+    @day.setter
+    def day(self, date: datetime):
+        self._day = date
+        self.sunlights() # if update _day, also update apicall forcely.
+
     # see also. ledlight.yml.TIMESHFTS
     # sunrise-sunset.org
-    # TODO: sunrise-sunset.org timings of data update
     @property
     def _sunrise(self): # consider other services fortunely
         self._recallAPI(self.sunlights)

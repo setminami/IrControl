@@ -23,6 +23,7 @@ KEYCODE: # can select fix name ledlight as rgb ledlight
 
 # When you wanna search selectable TIMEZONE, run python -c "import pytz;[print(tz) for tz in pytz.all_timezones]"
 TIMEZONE: 'Asia/Tokyo'
+UPDATE_TIME: 00:05
 
 SUNLIGHT_STATUS_API:
   location: # the sample is Tokyo

@@ -3,12 +3,13 @@
 # this made for python3
 
 import os, sys, argparse, yaml, subprocess as sp
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from util.env import expand_env
 from util.timer import LEDLightDayTimer
 from util.remote import Remote
 from util.weather_info import WeatherInfo
+from util import module_logger
 
 from time import sleep
 
@@ -36,7 +37,8 @@ class RGBControl(object):
         timer.timezone = self.PARAMS['TIMEZONE']
         self.remotes = {}
         # restrict update lircd for runnning
-        irsend = sp.check_output(['which', self.PARAMS['IRSEND_CMD']]).decode('utf-8')[:-1]
+        irsend = 'echo' if os.uname().sysname == 'Darwin' \
+            else sp.check_output(['which', self.PARAMS['IRSEND_CMD']]).decode('utf-8')[:-1]
         ifttt = self.PARAMS['IFTTT']
         for x in self.PARAMS['KEYCODE']:
             remote = Remote(irsend, ifttt['path'], ifttt['key'])
@@ -44,12 +46,13 @@ class RGBControl(object):
             self.remotes[x['name']] = remote
         timer.remote = self.remotes['ledlight']
         self._timer = timer
+        self.logger = module_logger(__name__)
 
     @property
     def timer(self):
         return self._timer
 
-    def update_settings(self):
+    def update_settings(self, day):
         """
         organize yaml settings
         An item which expected realtime update, describe here istead of __init__
@@ -58,7 +61,8 @@ class RGBControl(object):
           params = yaml.load(f)
           self.PARAMS = expand_env(params, DEBUG)
 
-        self._timer.weather = WeatherInfo(self.PARAMS['SUNLIGHT_STATUS_API'],
+        # TODO: check memory usage
+        self._timer.weather = WeatherInfo(day, self.PARAMS['SUNLIGHT_STATUS_API'],
                                             self.PARAMS['TIMESHIFTS'],
                                             self.PARAMS['TIMEZONE'])
         self._timer.do_schedule()
@@ -79,11 +83,16 @@ class RGBControl(object):
 
 if __name__ == '__main__':
     ins = RGBControl(LEDLightDayTimer())
+    day = datetime.now(ins.timer.timezone)
     while True:
         if ins.timer.is_usedup():
-            now = datetime.now(ins.timer.timezone)
-            print('Schedules set at %s:'%now.strftime('%Y-%d-%m %H:%M:%S%z'))
-            ins.update_settings()
-        sleep(5) # check per 5 min
-        print('.', end='')
+            ins.logger.info('Schedules set:')
+            x = ins.update_settings(day)
+            ins.logger.info(x)
+
+        if x is not None:
+            sleep(60 * 60) # check per 1h
+        else:
+            day += timedelta(days=1)
+            continue
     pass

@@ -15,16 +15,16 @@ class Remote(object):
         self.keys = keycodes
 
     def send_IR_key(self, key, repeat=1):
+
         sp.call('%s -#%d SEND_ONCE ledlight %s'%(self._ircmd, repeat, key), shell=True)
 
     def send_HTTP_trigger(self, endpoint, repeat=1):
-        ifttt_path = self._ifttt_path.format(endpoint, self._ifttt_key)
-        print('**** run {} {} for {} ****'.format(endpoint, repeat, ifttt_path))
+        ifttt_path = lambda key: self._ifttt_path.format(endpoint, key)
+        print('run {} {} for {}'.format(endpoint, repeat, ifttt_path('********')))
         for i in range(repeat):
-            cmd = 'curl %s'%ifttt_path
-            print('try %d: %s'%(i, cmd))
+            print('try %d: %s'%(i, ifttt_path('********')))
             # noneed to use pycurl
-            sp.call(cmd, shell=True)
+            sp.call('curl %s'%ifttt_path(self._ifttt_key), shell=True)
 
     @property
     def name(self): return self._name
