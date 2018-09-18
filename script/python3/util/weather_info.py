@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from util.schedule import Schedule
 from util import module_logger
 
-DEBUG = True
+DEBUG = False
 
 class WeatherInfo(object):
 

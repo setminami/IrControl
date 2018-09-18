@@ -6,8 +6,8 @@ KEYCODE: # can select fix name ledlight as rgb ledlight
     # describe registered name in [remote].lircd.conf strictly as remote controller grid.
     row_max: 6
     col_max: 4
-    '0_0': on
-    '0_1': off
+    '0_0': 'on'
+    '0_1': 'off'
     '0_2': down
     '0_3': up
     '1_0': white
@@ -23,7 +23,6 @@ KEYCODE: # can select fix name ledlight as rgb ledlight
 
 # When you wanna search selectable TIMEZONE, run python -c "import pytz;[print(tz) for tz in pytz.all_timezones]"
 TIMEZONE: 'Asia/Tokyo'
-UPDATE_TIME: 00:05
 
 SUNLIGHT_STATUS_API:
   location: # the sample is Tokyo
@@ -53,7 +52,7 @@ TIMESHIFTS:
       relative_time_sec: -7200 # -2h
     operations:
       # yaml in some condition, interpret on/off as boolean
-      - command: 'off'
+      - command: '0_1'
         remote: ledlight
         repeat: 3
 
@@ -62,10 +61,10 @@ TIMESHIFTS:
       time: astronomical_tw.begin
       relative_time_sec: 0
     operations:
-      - command: 'on'
+      - command: '0_0' # on
         remote: ledlight
         repeat: 3
-      - command: b0
+      - command: '1_1'
         remote: ledlight
         repeat: 3
 
@@ -74,10 +73,10 @@ TIMESHIFTS:
       time: nautical_tw.begin
       relative_time_sec: 0
     operations:
-      - command: 'on'
+      - command: '0_0'
         remote: ledlight
         repeat: 3
-      - command: b1
+      - command: '2_1'
         remote: ledlight
         repeat: 3
 
@@ -86,13 +85,13 @@ TIMESHIFTS:
       time: civil_tw.begin
       relative_time_sec: 0
     operations:
-      - command: 'on'
+      - command: '0_0'
         remote: ledlight
         repeat: 3
-      - command: up
+      - command: '0_3'
         remote: ledlight
         repeat: 16
-      - command: b2
+      - command: '3_1'
         remote: ledlight
         repeat: 3
 
@@ -101,13 +100,13 @@ TIMESHIFTS:
       time: sunrise
       relative_time_sec: 0
     operations:
-      - command: 'on'
+      - command: '0_0'
         remote: ledlight
         repeat: 3
-      - command: up # up & down has 8 stages. 16 ensure minmax
+      - command: '0_3' # up & down has 8 stages. 16 ensure minmax
         remote: ledlight
         repeat: 16
-      - command: b3
+      - command: '4_1'
         remote: ledlight
         repeat: 3
       - remote: IFTTT
@@ -119,7 +118,7 @@ TIMESHIFTS:
       time: solar_noon
       relative_time_sec: -3600
     operations:
-      - command: white
+      - command: '1_0'
         remote: ledlight
         repeat: 3
       - remote: IFTTT
@@ -131,10 +130,10 @@ TIMESHIFTS:
       time: sunset
       relative_time_sec: -5400 # -1.5h
     operations:
-      - command: b3
+      - command: '4_1'
         remote: ledlight
         repeat: 3
-      - command: down
+      - command: '0_2'
         remote: ledlight
         repeat: 16
       - remote: IFTTT
@@ -146,7 +145,7 @@ TIMESHIFTS:
       time: sunset
       relative_time_sec: 0
     operations:
-      - command: b4
+      - command: '5_1'
         remote: ledlight
         repeat: 3
       - remote: IFTTT
@@ -158,7 +157,7 @@ TIMESHIFTS:
       time: civil_tw.end
       relative_time_sec: 0
     operations:
-      - command: b1
+      - command: '2_1'
         remote: ledlight
         repeat: 3
 
@@ -167,6 +166,6 @@ TIMESHIFTS:
       time: astronomical_tw.end
       relative_time_sec: 0
     operations:
-      - command: b0
+      - command: '1_1'
         remote: ledlight
         repeat: 3

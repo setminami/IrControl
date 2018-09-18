@@ -71,7 +71,7 @@ class LEDLightDayTimer(object):
                 self._sched.enterabs(time.mktime(val.time.timetuple()), 2,
                                     self._do, argument=(val.operations, self.remote))
             else:
-                msg = 'not scheduled time had passed'
+                msg = 'not scheduled, time had passed'
             self.logger.info('{} {} @ {}: '.format(val.name, msg,
                                                 val.time.strftime('%Y-%m-%d %H:%M:%S%z')))
             if msg == 'will fire':

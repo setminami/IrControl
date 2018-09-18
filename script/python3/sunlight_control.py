@@ -20,11 +20,11 @@ SETTING = os.path.normpath(os.path.join(_BASE, '../../settings/ledlight.yml'))
 
 DEBUG = False
 
-class RGBControl(object):
+class SunlightControl(object):
 
     def __init__(self, timer, setting=None):
         if __name__ == '__main__':
-            self.ARGS = RGBControl.ArgParser()
+            self.ARGS = SunlightControl.ArgParser()
             self.config_path = self.ARGS.configure
         else:
             assert setting is not None
@@ -52,6 +52,17 @@ class RGBControl(object):
     def timer(self):
         return self._timer
 
+    # operate transferred instance
+    def _setup_wether_info(self, day):
+        # TODO: check memory usage
+        self._timer.weather = WeatherInfo(day, self.PARAMS['SUNLIGHT_STATUS_API'],
+                                            self.PARAMS['TIMESHIFTS'],
+                                            self.PARAMS['TIMEZONE'])
+
+    def _scheduling(self):
+        self._timer.do_schedule()
+
+
     def update_settings(self, day):
         """
         organize yaml settings
@@ -61,11 +72,8 @@ class RGBControl(object):
           params = yaml.load(f)
           self.PARAMS = expand_env(params, DEBUG)
 
-        # TODO: check memory usage
-        self._timer.weather = WeatherInfo(day, self.PARAMS['SUNLIGHT_STATUS_API'],
-                                            self.PARAMS['TIMESHIFTS'],
-                                            self.PARAMS['TIMEZONE'])
-        self._timer.do_schedule()
+        self._setup_wether_info(day)
+        self._scheduling()
 
     @staticmethod
     def ArgParser():
@@ -82,7 +90,7 @@ class RGBControl(object):
         return argParser.parse_args()
 
 if __name__ == '__main__':
-    ins = RGBControl(LEDLightDayTimer())
+    ins = SunlightControl(LEDLightDayTimer())
     day = datetime.now(ins.timer.timezone)
     while True:
         if ins.timer.is_usedup():
@@ -91,7 +99,7 @@ if __name__ == '__main__':
             ins.logger.info(x)
 
         if x is not None:
-            sleep(60 * 60) # check per 1h
+            sleep(30 * 60) # check per 30min
         else:
             day += timedelta(days=1)
             continue
