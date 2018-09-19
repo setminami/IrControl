@@ -25,9 +25,10 @@ KEYCODE: # can select fix name ledlight as rgb ledlight
 TIMEZONE: 'Asia/Tokyo'
 
 SUNLIGHT_STATUS_API:
-  location: # the sample is Tokyo
-    latitude: 35.658581
-    longitude: 139.745433
+  location: # the sample indices Edo-jou ruins in Tokyo
+    # https://www.google.co.jp/maps/place/%E6%B1%9F%E6%88%B8%E5%9F%8E%E8%B7%A1/@35.687747,139.7525013,17z/data=!3m1!4b1!4m5!3m4!1s0x60188c0b56209889:0xc4a3cc8d15146e69!8m2!3d35.687747!4d139.75469
+    latitude: 35.687747
+    longitude: 139.7525013
   cache_update_freq_min: 30
 
 IFTTT:
@@ -52,7 +53,7 @@ TIMESHIFTS:
       relative_time_sec: -7200 # -2h
     operations:
       # yaml in some condition, interpret on/off as boolean
-      - command: '0_1'
+      - command: '0_1' # off
         remote: ledlight
         repeat: 3
 
@@ -64,7 +65,7 @@ TIMESHIFTS:
       - command: '0_0' # on
         remote: ledlight
         repeat: 3
-      - command: '1_1'
+      - command: '1_1' # night blue
         remote: ledlight
         repeat: 3
 
@@ -73,10 +74,7 @@ TIMESHIFTS:
       time: nautical_tw.begin
       relative_time_sec: 0
     operations:
-      - command: '0_0'
-        remote: ledlight
-        repeat: 3
-      - command: '2_1'
+      - command: '2_1' # purple
         remote: ledlight
         repeat: 3
 
@@ -85,42 +83,40 @@ TIMESHIFTS:
       time: civil_tw.begin
       relative_time_sec: 0
     operations:
-      - command: '0_0'
+      - command: '3_1' # light purple
         remote: ledlight
         repeat: 3
-      - command: '0_3'
-        remote: ledlight
-        repeat: 16
-      - command: '3_1'
+
+  sunrise_glow:
+    schedule:
+      time: sunrise
+      relative_time_sec: 0
+    operations:
+      - command: '4_1' # redly blue
         remote: ledlight
         repeat: 3
 
   sunrise:
     schedule:
       time: sunrise
-      relative_time_sec: 0
+      relative_time_sec: 3600
     operations:
-      - command: '0_0'
-        remote: ledlight
-        repeat: 3
-      - command: '0_3' # up & down has 8 stages. 16 ensure minmax
-        remote: ledlight
-        repeat: 16
-      - command: '4_1'
+      - command: '1_0' # white
         remote: ledlight
         repeat: 3
       - remote: IFTTT
         command: weaklight_on
         repeat: 1 # because IFTTT is on TCP
 
+
   solar_noon:
     schedule:
       time: solar_noon
       relative_time_sec: -3600
     operations:
-      - command: '1_0'
+      - command: '0_3' # up
         remote: ledlight
-        repeat: 3
+        repeat: 16
       - remote: IFTTT
         command: noonlight_on
         repeat: 1 # because IFTTT is on TCP
@@ -130,10 +126,10 @@ TIMESHIFTS:
       time: sunset
       relative_time_sec: -5400 # -1.5h
     operations:
-      - command: '4_1'
+      - command: '4_1' # redly blue
         remote: ledlight
         repeat: 3
-      - command: '0_2'
+      - command: '0_2' # down
         remote: ledlight
         repeat: 16
       - remote: IFTTT
@@ -145,7 +141,7 @@ TIMESHIFTS:
       time: sunset
       relative_time_sec: 0
     operations:
-      - command: '5_1'
+      - command: '5_1' # strong redly blue
         remote: ledlight
         repeat: 3
       - remote: IFTTT
@@ -157,7 +153,7 @@ TIMESHIFTS:
       time: civil_tw.end
       relative_time_sec: 0
     operations:
-      - command: '2_1'
+      - command: '2_1' # purple
         remote: ledlight
         repeat: 3
 
@@ -166,6 +162,6 @@ TIMESHIFTS:
       time: astronomical_tw.end
       relative_time_sec: 0
     operations:
-      - command: '1_1'
+      - command: '1_1' # night blue
         remote: ledlight
         repeat: 3
