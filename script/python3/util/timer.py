@@ -78,6 +78,7 @@ class LEDLightDayTimer(object):
                 # expand __str__
                 [self.logger.info('- %s'%o) for o in val.operations]
         self._sched.run()
+        return self._sched.queue
 
     def _do(self, ops, ins):
         [op.do(ins) for op in ops]
