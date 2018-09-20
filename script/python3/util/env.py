@@ -21,7 +21,7 @@ def expand_env(params, verbose=False):
                 params[key] = environ[val[2:-1]]
                 _print('Overwrite env value {} = {}'.format(val, params[key]), verbose)
             else:
-                _print('## ${} not exported for {}. Please check your yaml file. ##'%(val[2:-1], key), verbose)
+                _print('## ${} not exported for {}. Please check your yaml file. ##'.format(val[2:-1], key), verbose)
         else:
             _print('?? %s TYPE is %s'%(val, type(val)), verbose)
     return params

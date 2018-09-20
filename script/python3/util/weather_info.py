@@ -162,6 +162,10 @@ class WeatherInfo(object):
         return self._parse_schedule_items(sys._getframe().f_code.co_name)
 
     @property
+    def sunrise_glow(self):
+        return self._parse_schedule_items(sys._getframe().f_code.co_name)
+
+    @property
     def sunrise(self):
         return self._parse_schedule_items(sys._getframe().f_code.co_name)
 
