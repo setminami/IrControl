@@ -3,7 +3,7 @@
 # based on https://github.com/rm-hull/luma.examples/blob/master/examples/clock.py
 
 import math, time, datetime
-import threading
+from multiprocessing import Process, Event
 
 from .. import schedule
 import os
@@ -16,11 +16,10 @@ else:
 
 class Screen(object):
     def __init__(self, schedules):
-        self._device = get_device()
+        self._device = get_device(['-d', 'ssd1331', '-i', 'spi', '--width', '96', '--height', '64'])
         self._schedules = schedules
-        self.stop_event = threading.Event()
-        self._thread = threading.Thread(target=self.run, args=())
-        self._thread.setDaemon(True)
+        self.stop_event = Event()
+        self._thread = Process(target=self.run, args=())
 
     @property
     def device(self):
@@ -35,15 +34,11 @@ class Screen(object):
     def start(self):
         assert hasattr(self, '_thread')
         self._thread.start()
-        self._thread.join()
         return self
 
     def kill(self):
         assert hasattr(self, 'stop_event')
         self.stop_event.set()
-
-    def run(self):
-        pass
 
     def posn(angle, arm_length):
         dx = int(math.cos(math.radians(angle)) * arm_length)
@@ -51,7 +46,7 @@ class Screen(object):
         return (dx, dy)
 
 
-    def clock(self):
+    def run(self):
         today_last_time = "Unknown"
         device = self.device
         an_lineheight = 8
@@ -92,5 +87,9 @@ class Screen(object):
                     draw.text((1.8 * (cx + margin), cy - an_lineheight * 4), 'next:', fill="yellow")
                     draw.text((1.8 * (cx + margin), cy - an_lineheight * 2), today_date, fill="yellow")
                     draw.text((2 * (cx + margin), cy), today_time, fill="yellow")
-
             time.sleep(0.1)
+
+if __name__ == '__main__':
+    ins = Screen(None)
+    ins.start()
+    ins.join()

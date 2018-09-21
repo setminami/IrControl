@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 # this made for python3
 
-import os, sys, argparse, yaml, subprocess as sp, threading
+import os, sys, argparse, yaml, subprocess as sp
+from multiprocessing import Process, Event
 from datetime import datetime, timedelta
 
 from util.env import expand_env
@@ -50,9 +51,8 @@ class SunlightControl(object):
         self._timer = timer
         self.logger = module_logger(__name__)
 
-        self.stop_event = threading.Event()
-        self._thread = threading.Thread(target=self.run, args=())
-        self._thread.setDaemon(True)
+        self.stop_event = Event()
+        self._thread = Process(target=self.run, args=())
 
     @property
     def timer(self):
@@ -66,14 +66,7 @@ class SunlightControl(object):
 
     @property
     def active_schedules(self):
-        i = 0
-        while not hasattr(self, '_active_schedules'):
-            if i == 500:
-                print('cannot set active schedule')
-                exit(1)
-            else:
-                i += 1
-            sleep(0.1)
+        assert hasattr(self, '_active_schedules')
         return self._active_schedules
     @active_schedules.setter
     def active_schedules(self, val):
@@ -125,7 +118,7 @@ class SunlightControl(object):
                 self.active_schedules = self.update_settings(day)
                 self.logger.info('Schedules = {}'.format(self.active_schedules))
 
-            if self.active_schedules is not None:
+            if len(self.active_schedules) > 0:
                 sleep(self.check_per_sec) # check new schedules per
             else:
                 # search active day to fetch astronomy data
@@ -154,9 +147,12 @@ if __name__ == '__main__':
     ins = None
     try:
         ins = SunlightControl(LEDLightDayTimer(), 30 * 60).start()
+        sleep(1)
         print('XXX')
-        ins2 = Screen(ins.active_schedules)
+        ins2 = Screen(ins.active_schedules).start()
         ins.thread.join()
+        ins2.thread.join()
     except KeyboardInterrupt:
         if ins is not None: kill_thread(ins)
+        if ins2 is not None: kill_thread(ins2)
         print('Caught KeyboardInterrupt. schedules were cancelled.')
