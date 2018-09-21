@@ -6,6 +6,13 @@ import math, time, datetime
 import threading
 
 from .. import schedule
+import os
+if os.uname().sysname == 'Darwin':
+    print('## the ENV Cannot use luma library ##')
+    from .dummy_opts import get_device
+else:
+    from luma.core.render import canvas
+    from .demo_opts import get_device
 
 class Screen(object):
     def __init__(self, schedules):
@@ -34,6 +41,9 @@ class Screen(object):
     def kill(self):
         assert hasattr(self, 'stop_event')
         self.stop_event.set()
+
+    def run(self):
+        pass
 
     def posn(angle, arm_length):
         dx = int(math.cos(math.radians(angle)) * arm_length)
