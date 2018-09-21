@@ -215,21 +215,14 @@ if __name__ == '__main__':
     # use like shared flag
     update = Event()
     try:
-        # preprocess
-        print('#####')
-
         ins = SunlightControl(LEDLightDayTimer(), 30 * 60, update)
         ins.setDaemon(True)
         ins2 = Screen(update, ins)
         ins2.setDaemon(True)
-        print('%%%%%')
-        # ins.start()
-        # ins.join(5)
-        print('XXX')
+
         ins2.start()
         ins.start()
-        # ins2.join()
+        ins2.join()
+        ins.join()
     except KeyboardInterrupt:
-        ins.join(1)
-        ins2.join(1)
         print('Caught KeyboardInterrupt. schedules were cancelled.')
