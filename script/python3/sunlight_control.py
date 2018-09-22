@@ -176,7 +176,7 @@ class Screen(Thread):
                         # SunlightControl.active_schedules is ready
                         # get most recent schedule for future
                         schs = ins.active_schedules
-                        self.updateed.clear()
+                        self.updated.clear()
                     if (schs is not None) and len(schs) > 0:
                         print('Schedules = {}'.format(schs))
 

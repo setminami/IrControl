@@ -2,7 +2,7 @@
 # this made for  python3.5.3
 
 import sys, pycurl, json, pytz, dateutil.parser
-import traceback
+import traceback, time
 from io import BytesIO
 from datetime import datetime, timedelta
 
@@ -24,23 +24,31 @@ class WeatherInfo(object):
     def sunlights(self):
         lat, lng, today = self.PARAMS['latitude'], self.PARAMS['longitude'], self._day.strftime('%Y-%m-%d')
         url_path = 'https://api.sunrise-sunset.org/json'
+        retries_left = 5
         # cannot use with as yield?
         curl = pycurl.Curl()
         curl.setopt(pycurl.URL, url_path + '?lat=%s&lng=%s&formatted=0&date=%s'%(lat, lng, today))
         b = BytesIO()
         curl.setopt(pycurl.WRITEFUNCTION, b.write)
         curl.setopt(pycurl.VERBOSE, DEBUG)
-        try:
-            curl.perform()
-            self._sunlights = json.loads(b.getvalue().decode('UTF-8'))
-            self.logger.debug(self._sunlights)
-            self.fetched_result = datetime.now() \
-                if self._sunlights['status'] == 'OK' else None # as success flag
-        except:
-            traceback.print_exc()
-            exit(1)
-        finally:
-            curl.close()
+        while retries_left > 0:
+            try:
+                curl.perform()
+                self._sunlights = json.loads(b.getvalue().decode('UTF-8'))
+                self.logger.debug(self._sunlights)
+                self.fetched_result = datetime.now() \
+                    if self._sunlights['status'] == 'OK' else None # as success flag
+                break
+            except:
+                if retries_left == 0:
+                    traceback.print_exc()
+                    exit(1)
+                else:
+                    self.logger.info('retry pycurl %d'%retries_left)
+                    retries_left -= 1
+                    time.sleep(2)
+                    continue
+        curl.close()
 
     def _convByTZ(self, utcstr):
         self.logger.debug('call {}({})'.format(sys._getframe().f_code.co_name, utcstr))
