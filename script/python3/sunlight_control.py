@@ -36,8 +36,8 @@ class DrawType(Enum):
         # TODO: generalize each draw type args
         # write each comment as args tuple and copy'n pasetes for tuple declarations in draw_display
         if self == DrawType.CLOCK:
-            # an_lineheight, margin, height_max, cx, base_angle, label_text, clock_frame_color, needle_color, sec_needle_color, text_color
-            return (8, 4, 64, 30, 270, 'Next:', 'yellow', 'white', 'cyan', 'white')
+            # an_lineheight, margin, height_max, cx, base_angle, PM_R, AM_R, label_text, clock_frame_color, needle_color, sec_needle_color, text_color
+            return (8, 4, 64, 30, 270, 30, 20, 'Next:', 'yellow', 'white', 'red', 'white')
         else:
             return ()
 
@@ -168,8 +168,9 @@ class SunlightControl(Thread):
         device = self.device
         with canvas(device) as draw:
             if draw_type == DrawType.CLOCK:
-                an_lineheight, margin, height_max, cx, base_angle, label_text, \
-                 clock_frame_color, needle_color, sec_needle_color, text_color = args
+                an_lineheight, margin, height_max, cx, base_angle, PM_R, AM_R, \
+                label_text, clock_frame_color, needle_color, sec_needle_color, text_color, \
+                    = args
                 now = datetime.now(self.timer.timezone)
                 today_date = now.strftime("%y%m%d")
                 today_time = now.strftime('%H:%M:%S')
@@ -179,6 +180,7 @@ class SunlightControl(Thread):
                     # SunlightControl.active_schedules is ready
                     # head is most recent schedule for future
                     schs = [(x.argument[:2],  datetime.fromtimestamp(x.time, tz=self.timezone)) for x in self.active_schedules if x.time > now.timestamp()]
+                else: return
 
                 name, time = schs[0]
                 cy = min(device.height, height_max) / 2
@@ -195,16 +197,26 @@ class SunlightControl(Thread):
                 sec_angle = base_angle + (6 * now.second)
                 secs = self.posn(sec_angle, cy - margin - 2)
                 # dimension ssd1331 96 x 64
-                draw.ellipse((left + margin, margin, right - margin, min(device.height, height_max) - margin), outline=clock_frame_color)
+                # to see drawer funcs signeture, see. https://pillow.readthedocs.io/en/latest/reference/ImageDraw.html
+                # because of luma.core.canvas implementation. (see also)
+                # PM circle (x - cx)^2 + (y - cy)^2 = PM_R^2
+                origin = (cx, cy)
+                draw.ellipse(self._circular(PM_R, origin), outline=clock_frame_color)
+
+                # AM circle, This circle must be concentric with PM circle
+                draw.ellipse(self._circular(AM_R, origin), outline='blue')
+
                 draw.line((cx, cy, cx + hrs[0], cy + hrs[1]), fill=needle_color)
                 draw.line((cx, cy, cx + mins[0], cy + mins[1]), fill=needle_color)
                 draw.line((cx, cy, cx + secs[0], cy + secs[1]), fill=sec_needle_color)
-                draw.ellipse((cx - 2, cy - 2, cx + 2, cy + 2), fill="white", outline="white")
+                # clock origin
+                draw.ellipse(self._circular(2, origin), fill="white", outline="white")
 
                 # literal infos
                 # print Most Recent Schedule's name & time
                 draw.text((1.8 * (cx + margin), cy - an_lineheight * 4), label_text, fill=text_color)
-                display_name, display_color = name[1]['shorten_name'], name[1]['color']
+                DISPLAY = 1 # only for readability
+                display_name, display_color = name[DISPLAY]['shorten_name'], name[DISPLAY]['color']
                 draw.text((1.8 * (cx + margin), cy - an_lineheight * 2.4), display_name, fill=display_color, outline=text_color)
                 self.logger.debug(display_name)
                 # output most recent schedule's name
@@ -214,6 +226,39 @@ class SunlightControl(Thread):
                 draw.text((1.9 * (cx + margin), cy), time.strftime(timeform), fill=text_color)
                 self.logger.debug(time.strftime(timeform))
 
+                # plot schedules on ellipse
+                self._plot_schedule(draw, origin, 0, PM_R, AM_R, schs)
+
+    def _circular(self, r, origin):
+        return (tuple([x - r for x in origin]), tuple([x + r for x in origin]))
+
+    def _plot_schedule(self, draw, origin, base_angle, PM_R, AM_R, schedules):
+        """ plot schedules on ellipse """
+        DISPLAY = 1
+        for s in schedules:
+            name, time = s
+            color = name[DISPLAY]['color']
+            R = AM_R if time.hour < 12 else PM_R
+            draw.ellipse(self._plot_on_circle(origin, base_angle, R, 1.5, time), fill=color)
+
+    def _plot_on_circle(self, origin, base_angle, R, plot_R, time):
+        """
+        12h = 720min => 1min as degree = (360/720) = 0.5 = 1/2
+                             as radian = (2pi/720) = 2.777778pi * 10^-3
+        0:00 -> origin: (Ox, Oy + R)
+        0:05 -> origin: (Ox + Rsin(deg:0.5 * 5), Oy + Rcos(deg:0.5 * 5))
+        ∴
+        N:M -> origin: passed_min=(N * 60 + M), (Ox + Rsin(deg:passed_min/2), Oy + Rcos(deg:passed_min/2))
+        (however, origin is left-down )
+        """
+        Ox, Oy = origin
+        h12 = time.hour if time.hour < 12 else (time.hour - 12)
+        # as radian
+        # passed_min = (h12 * 60 + time.minute) * 0.002777778 * math.pi
+        # degree to radian
+        passed_min = math.radians((h12 * 60 + time.minute) / 2 + base_angle)
+        # here, axis origin is left-up, -> Oy - .... 
+        return self._circular(plot_R, (Ox + math.sin(passed_min) * R, Oy - math.cos(passed_min) * R))
 
     def run(self):
         self.core_process(DrawType.CLOCK)

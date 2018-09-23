@@ -65,7 +65,7 @@ TIMESHIFTS:
   midnight: # If you want to adjust set like below
     display:
       shorten_name: midNT
-      color: black
+      color: darkgray
     schedule:
       time: astronomical_tw.begin
       relative_time_sec: -7200 # -2h
