@@ -76,7 +76,7 @@ TIMESHIFTS:
 
   astronomical_twilight:
     display:
-      shorten_name: ast_TwLT
+      shorten_name: asTwLT
       color: darkblue
     schedule:
       time: astronomical_tw.begin
@@ -91,7 +91,7 @@ TIMESHIFTS:
 
   nautical_twilight:
     display:
-      shorten_name: na_TwLT
+      shorten_name: naTwLT
       color: violet
     schedule:
       time: nautical_tw.begin
@@ -103,7 +103,7 @@ TIMESHIFTS:
 
   civil_twilight:
     display:
-      shorten_name: civ_TwLT
+      shorten_name: cvTwLT
       color: palevioletred
     schedule:
       time: civil_tw.begin
@@ -115,7 +115,7 @@ TIMESHIFTS:
 
   sunrise_glow:
     display:
-      shorten_name: rise_glw
+      shorten_name: rsGLW
       color: mediumvioletred
     schedule:
       time: sunrise
@@ -127,7 +127,7 @@ TIMESHIFTS:
 
   sunrise:
     display:
-      shorten_name: sunrise
+      shorten_name: sunRs
       color: lightgray
     schedule:
       time: sunrise
@@ -158,7 +158,7 @@ TIMESHIFTS:
 
   evening:
     display:
-      shorten_name: evening
+      shorten_name: even
       color: goldenrod
     schedule:
       time: sunset
@@ -176,7 +176,7 @@ TIMESHIFTS:
 
   sunset:
     display:
-      shorten_name: sunset
+      shorten_name: sunSet
       color: orangered
     schedule:
       time: sunset
@@ -245,7 +245,7 @@ TIMESHIFTS_for_debg:
 
   astronomical_twilight:
     display:
-      shorten_name: ast_TwLT
+      shorten_name: asTwLT
       color: darkblue
     schedule:
       time: ---
@@ -260,7 +260,7 @@ TIMESHIFTS_for_debg:
 
   nautical_twilight:
     display:
-      shorten_name: na_TwLT
+      shorten_name: naTwLT
       color: violet
     schedule:
       time: ---
@@ -272,7 +272,7 @@ TIMESHIFTS_for_debg:
 
   civil_twilight:
     display:
-      shorten_name: civ_TwLT
+      shorten_name: cvTwLT
       color: palevioletred
     schedule:
       time: ---
@@ -284,7 +284,7 @@ TIMESHIFTS_for_debg:
 
   sunrise_glow:
     display:
-      shorten_name: rise_glw
+      shorten_name: rsGLW
       color: mediumvioletred
     schedule:
       time: ---
@@ -296,7 +296,7 @@ TIMESHIFTS_for_debg:
 
   sunrise:
     display:
-      shorten_name: sunrise
+      shorten_name: sunRs
       color: lightgray
     schedule:
       time: ---
@@ -327,7 +327,7 @@ TIMESHIFTS_for_debg:
 
   evening:
     display:
-      shorten_name: evening
+      shorten_name: even
       color: goldenrod
     schedule:
       time: ---
@@ -345,7 +345,7 @@ TIMESHIFTS_for_debg:
 
   sunset:
     display:
-      shorten_name: sunset
+      shorten_name: sunSet
       color: orangered
     schedule:
       time: ---

@@ -37,7 +37,7 @@ class canvas(object):
         """
         pass
 
-    def text(self, arg, msg, fill):
+    def text(self, arg, msg, fill, outline=''):
         """
         e.g.,
         text((1.8 * (cx + margin), cy - an_lineheight * 4), 'next:', fill="yellow")

@@ -204,8 +204,8 @@ class SunlightControl(Thread):
                 # literal infos
                 # print Most Recent Schedule's name & time
                 draw.text((1.8 * (cx + margin), cy - an_lineheight * 4), label_text, fill=text_color)
-                display_name = name[1]['shorten_name']
-                draw.text((1.8 * (cx + margin), cy - an_lineheight * 2.4), display_name, fill=text_color)
+                display_name, display_color = name[1]['shorten_name'], name[1]['color']
+                draw.text((1.8 * (cx + margin), cy - an_lineheight * 2.4), display_name, fill=display_color, outline=text_color)
                 self.logger.debug(display_name)
                 # output most recent schedule's name
                 dateform, timeform = '%y%m%d', '%H:%M'
