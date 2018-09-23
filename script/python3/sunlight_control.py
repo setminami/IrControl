@@ -5,7 +5,9 @@
 import os, sys, argparse, yaml, math, time, subprocess as sp
 # from multiprocessing import Process, Event
 from threading import Thread, Event
+from multiprocessing import Pool
 from datetime import datetime, timedelta
+from enum import Enum
 
 from util.env import expand_env
 from util.timer import LEDLightDayTimer
@@ -14,7 +16,7 @@ from util.weather_info import WeatherInfo
 from util import module_logger
 if os.uname().sysname == 'Darwin':
     print('## the ENV Cannot use luma library ##')
-    from display.dummy_opts import get_device
+    from display.dummy_for_macOS import get_device, canvas
 else:
     from luma.core.render import canvas
     from display.demo_opts import get_device
@@ -27,10 +29,21 @@ _BASE = os.path.dirname(os.path.abspath(__file__))
 SETTING = os.path.normpath(os.path.join(_BASE, '../../settings/ledlight.yml'))
 
 DEBUG = False
+class DrawType(Enum):
+    CLOCK = 1
+
+    def preprocessor(self):
+        # TODO: generalize each draw type args
+        # write each comment as args tuple and copy'n pasetes for tuple declarations in draw_display
+        if self == DrawType.CLOCK:
+            # an_lineheight, margin, height_max, cx, base_angle, label_text, clock_frame_color, needle_color, sec_needle_color, text_color
+            return (8, 4, 64, 30, 270, 'Next:', 'yellow', 'white', 'cyan', 'white')
+        else:
+            return ()
 
 class SunlightControl(Thread):
 
-    def __init__(self, timer, per_sec, update_event, setting=None):
+    def __init__(self, timer, per_sec, setting=None):
         if __name__ == '__main__':
             self.ARGS = SunlightControl.ArgParser()
             self.config_path = self.ARGS.configure
@@ -42,8 +55,8 @@ class SunlightControl(Thread):
           params = yaml.load(f)
           self.PARAMS = expand_env(params, DEBUG)
 
+        self._device = get_device(['-d', 'ssd1331', '-i', 'spi', '--width', '96', '--height', '64'])
         self._per_sec = per_sec # to check every _perse
-        self._update_event = update_event
         timer.timezone = self.PARAMS['TIMEZONE']
         self.remotes = {}
         # restrict update lircd for runnning
@@ -56,13 +69,9 @@ class SunlightControl(Thread):
             self.remotes[x['name']] = remote
         timer.remote = self.remotes['ledlight']
         self._timer = timer
-        self.logger = module_logger(__name__)
+        self.kill_received = False
+        self.logger = module_logger(__class__.__name__)
         super().__init__()
-
-    @property
-    def updated(self):
-        assert hasattr(self, '_update_event')
-        return self._update_event
 
     @property
     def timer(self):
@@ -70,28 +79,48 @@ class SunlightControl(Thread):
         return self._timer
 
     @property
+    def timezone(self):
+        assert hasattr(self.timer, 'timezone')
+        return self.timer.timezone
+
+    @property
     def check_per_sec(self):
         assert hasattr(self, '_per_sec')
         return self._per_sec
 
+    # sorted by time
     @property
     def active_schedules(self):
-        assert hasattr(self, '_active_schedules')
-        return self._active_schedules
+        if hasattr(self, '_active_schedules') and \
+            self._active_schedules is not None:
+            return sorted([x for x in self._active_schedules if x.time > datetime.now().timestamp()], key = lambda x: x.time)
+        else:
+            return []
     @active_schedules.setter
     def active_schedules(self, val):
         self._active_schedules = val
 
+    # display control
+    @property
+    def device(self):
+        assert hasattr(self, '_device')
+        return self._device
+
+    def posn(self, angle, arm_length):
+        dx = int(math.cos(math.radians(angle)) * arm_length)
+        dy = int(math.sin(math.radians(angle)) * arm_length)
+        return (dx, dy)
+
     # operate transferred instance
     def _setup_wether_info(self, day):
         # TODO: check memory usage
+        TIMESHIFTS = 'TIMESHIFTS' if os.uname().sysname != 'Darwin' else 'TIMESHIFTS_for_debg'
         self._timer.weather = WeatherInfo(day, self.PARAMS['SUNLIGHT_STATUS_API'],
-                                            self.PARAMS['TIMESHIFTS'],
+                                            self.PARAMS[TIMESHIFTS],
                                             self.PARAMS['TIMEZONE'])
 
     def _scheduling(self):
         return self._timer.do_schedule()
-
 
     def update_settings(self, day):
         """
@@ -105,21 +134,92 @@ class SunlightControl(Thread):
         self._setup_wether_info(day)
         return self._scheduling()
 
-    def run(self):
-        day = datetime.now(self.timer.timezone)
+    def core_process(self, draw_type):
         self.active_schedules = None
-        while True:
+        today_last_time = "Unknown"
+        device = self.device
+
+        args = draw_type.preprocessor()
+
+        self.logger.debug('check {}'.format(self))
+        while not self.kill_received:
+            now = datetime.now(self.timer.timezone)
             if self.timer.is_usedup():
-                self.logger.info('Schedules set for day: %s'%day.strftime('%Y-%m-%d'))
-                self.active_schedules = self.update_settings(day)
-                self.updated.set() # new schedules were setuped
+                day = now
+                while len(self.active_schedules) == 0:
+                    self.logger.info('Schedules set for day: %s'%day.strftime('%Y-%m-%d'))
+                    self.active_schedules = self.update_settings(day)
+                    if len(self.active_schedules) > 0:
+                        break
+                    else:
+                        # search active day to fetch astronomy data
+                        day += timedelta(days=1)
+                        continue
                 self.logger.info('Schedules = {}'.format(self.active_schedules))
 
-            if len(self.active_schedules) > 0:
-                sleep(self.check_per_sec) # check new schedules per
-            else:
-                # search active day to fetch astronomy data
-                day += timedelta(days=1)
+            today_time = now.strftime('%H:%M:%S') # draw per seconds
+            if today_time != today_last_time:
+                today_last_time = today_time
+                self.draw_display(draw_type, args)
+
+            sleep(0.1)
+
+    def draw_display(self, draw_type, args):
+        device = self.device
+        with canvas(device) as draw:
+            if draw_type == DrawType.CLOCK:
+                an_lineheight, margin, height_max, cx, base_angle, label_text, \
+                 clock_frame_color, needle_color, sec_needle_color, text_color = args
+                now = datetime.now(self.timer.timezone)
+                today_date = now.strftime("%y%m%d")
+                today_time = now.strftime('%H:%M:%S')
+                schs = None
+                if (self.active_schedules is not None) and \
+                        (len(self.active_schedules) > 0):
+                    # SunlightControl.active_schedules is ready
+                    # head is most recent schedule for future
+                    schs = [(x.argument[:2],  datetime.fromtimestamp(x.time, tz=self.timezone)) for x in self.active_schedules if x.time > now.timestamp()]
+
+                name, time = schs[0]
+                cy = min(device.height, height_max) / 2
+
+                left = cx - cy
+                right = cx + cy
+
+                hrs_angle = base_angle + (30 * (now.hour + (now.minute / 60.0)))
+                hrs = self.posn(hrs_angle, cy - margin - 7)
+
+                min_angle = base_angle + (6 * now.minute)
+                mins = self.posn(min_angle, cy - margin - 2)
+
+                sec_angle = base_angle + (6 * now.second)
+                secs = self.posn(sec_angle, cy - margin - 2)
+                # dimension ssd1331 96 x 64
+                draw.ellipse((left + margin, margin, right - margin, min(device.height, height_max) - margin), outline=clock_frame_color)
+                draw.line((cx, cy, cx + hrs[0], cy + hrs[1]), fill=needle_color)
+                draw.line((cx, cy, cx + mins[0], cy + mins[1]), fill=needle_color)
+                draw.line((cx, cy, cx + secs[0], cy + secs[1]), fill=sec_needle_color)
+                draw.ellipse((cx - 2, cy - 2, cx + 2, cy + 2), fill="white", outline="white")
+
+                # literal infos
+                # print Most Recent Schedule's name & time
+                draw.text((1.8 * (cx + margin), cy - an_lineheight * 4), label_text, fill=text_color)
+                display_name = name[1]['shorten_name']
+                draw.text((1.8 * (cx + margin), cy - an_lineheight * 2.4), display_name, fill=text_color)
+                self.logger.debug(display_name)
+                # output most recent schedule's name
+                dateform, timeform = '%y%m%d', '%H:%M'
+                draw.text((1.8 * (cx + margin), cy - an_lineheight * 1), time.strftime(dateform), fill=text_color)
+                self.logger.debug(time.strftime(dateform))
+                draw.text((1.9 * (cx + margin), cy), time.strftime(timeform), fill=text_color)
+                self.logger.debug(time.strftime(timeform))
+
+
+    def run(self):
+        self.core_process(DrawType.CLOCK)
+
+    def kill(self):
+        self.kill_received = True
 
     @staticmethod
     def ArgParser():
@@ -135,94 +235,17 @@ class SunlightControl(Thread):
             help='config file that wrote by yaml describe params, see default=%s'%SETTING)
         return argParser.parse_args()
 
-
-class Screen(Thread):
-    def __init__(self, update_event, sunctrl):
-        self._device = get_device(['-d', 'ssd1331', '-i', 'spi', '--width', '96', '--height', '64'])
-        self._update_event = update_event
-        self._sunctrl = sunctrl
-        super().__init__()
-
-    @property
-    def updated(self):
-        assert hasattr(self, '_update_event')
-        return self._update_event
-
-    @property
-    def device(self):
-        assert hasattr(self, '_device')
-        return self._device
-
-    def posn(self, angle, arm_length):
-        dx = int(math.cos(math.radians(angle)) * arm_length)
-        dy = int(math.sin(math.radians(angle)) * arm_length)
-        return (dx, dy)
-
-
-    def run(self):
-        today_last_time = "Unknown"
-        device = self.device
-        an_lineheight = 8
-
-        while True:
-            now = datetime.now()
-            today_time = now.strftime("%H:%M:%S")
-            if today_time != today_last_time:
-                today_last_time = today_time
-                with canvas(device) as draw:
-                    now = datetime.now()
-                    schs = None
-                    if self.updated.is_set():
-                        # SunlightControl.active_schedules is ready
-                        # get most recent schedule for future
-                        schs = ins.active_schedules
-                        self.updated.clear()
-                    if (schs is not None) and len(schs) > 0:
-                        print('Schedules = {}'.format(schs))
-
-                    today_date = now.strftime("%y%m%d")
-
-                    margin = 4
-
-                    cx = 30
-                    cy = min(device.height, 64) / 2
-
-                    left = cx - cy
-                    right = cx + cy
-
-                    hrs_angle = 270 + (30 * (now.hour + (now.minute / 60.0)))
-                    hrs = self.posn(hrs_angle, cy - margin - 7)
-
-                    min_angle = 270 + (6 * now.minute)
-                    mins = self.posn(min_angle, cy - margin - 2)
-
-                    sec_angle = 270 + (6 * now.second)
-                    secs = self.posn(sec_angle, cy - margin - 2)
-                    # dimension ssd1331 96 x 64
-                    draw.ellipse((left + margin, margin, right - margin, min(device.height, 64) - margin), outline="yellow")
-                    draw.line((cx, cy, cx + hrs[0], cy + hrs[1]), fill="white")
-                    draw.line((cx, cy, cx + mins[0], cy + mins[1]), fill="white")
-                    draw.line((cx, cy, cx + secs[0], cy + secs[1]), fill="cyan")
-                    draw.ellipse((cx - 2, cy - 2, cx + 2, cy + 2), fill="white", outline="white")
-
-                    # literal infos
-                    draw.text((1.8 * (cx + margin), cy - an_lineheight * 4), 'next:', fill="yellow")
-                    draw.text((1.8 * (cx + margin), cy - an_lineheight * 2), today_date, fill="yellow")
-                    draw.text((2 * (cx + margin), cy), today_time, fill="yellow")
-            time.sleep(0.1)
-
 if __name__ == '__main__':
     # use like shared flag
-    update = Event()
+    kill = Event()
     try:
-        ins = SunlightControl(LEDLightDayTimer(), 30 * 60, update)
-        ins.setDaemon(True)
-        ins2 = Screen(update, ins)
-        ins2.setDaemon(True)
+        # ins.setDaemon(True)
+        ins = SunlightControl(LEDLightDayTimer(), 30 * 60)
+        # ins.setDaemon(True)
 
-        ins2.start()
         ins.start()
-        ins2.join()
         ins.join()
     except KeyboardInterrupt:
+        ins.kill()
         print('Caught KeyboardInterrupt. schedules were cancelled.')
+        exit(0)

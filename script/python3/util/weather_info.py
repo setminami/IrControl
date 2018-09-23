@@ -17,7 +17,7 @@ class WeatherInfo(object):
         self.PARAMS = {'latitude': setting['location']['latitude'], 'longitude': setting['location']['longitude']}
         self.update_min = setting['cache_update_freq_min']
         self.TZ = pytz.timezone(tz)
-        self.TIMESHIFTS = schedule
+        self.TIMESHIFTS = schedule # TIMESHIFTS in yaml
         self._day = day
         self.logger = module_logger(__name__)
 
@@ -65,13 +65,17 @@ class WeatherInfo(object):
     def _parse_schedule_items(self, item_name):
         """ calculate time for item_name from schedule settings """
         item = self.TIMESHIFTS[item_name]
+        display = item['display']
         time = self._parse_trigger_time(item['schedule'])
         operations = item['operations']
-        return Schedule(item_name, time, operations)
+        return Schedule(item_name, display, time, operations)
 
-
+    # TODO: organize logics
     def _parse_trigger_time(self, schedule):
-        time, rel = schedule['time'].split('.'), schedule['relative_time_sec']
+        time, rel = schedule['time'], schedule['relative_time_sec']
+        if isinstance(time, str):
+            time = time.split('.') if time is not '---' else time
+
         if len(time) == 2:
             if time[1] == 'end': idx = 1
             elif time[1] == 'begin': idx = 0
@@ -87,10 +91,17 @@ class WeatherInfo(object):
         elif len(time) == 1:
             try:
                 start_time = eval('self._%s'%time[0])
-            except Exception as e:
-                traceback.print_exc()
-                print('Couldnt eval @ [self._%s]'%(time[0]))
-                exit(1)
+            except SyntaxError as se:
+                # eval() Error property not found
+                try:
+                    start_time = datetime.strptime(time[0], '%Y-%m-%dT%H%M')
+                except:
+                    try:
+                        start_time = datetime.now(self.TZ)
+                    except :
+                        traceback.print_exc()
+                        print('Couldnt parse %s'%(time[0]))
+                        exit(1)
         else:
             traceback.print_exc()
             print('TIMESHIFTS.schedule.time settings incorrect. @%s'%(item_name))
@@ -108,6 +119,8 @@ class WeatherInfo(object):
 
     # see also. ledlight.yml.TIMESHFTS
     # sunrise-sunset.org
+    ###########################
+    ### ** named times ** ###
     @property
     def _sunrise(self): # consider other services fortunely
         self._recallAPI(self.sunlights)
@@ -140,6 +153,8 @@ class WeatherInfo(object):
         self._recallAPI(self.sunlights)
         return (self._convByTZ(self._sunlights['results']['astronomical_twilight_begin']),
                 self._convByTZ(self._sunlights['results']['astronomical_twilight_end']))
+    ##############################################
+
 
     # utility
     @property
@@ -153,6 +168,8 @@ class WeatherInfo(object):
         return ret
 
     # the repo calculated properties
+    ######################################################################
+    ###                 fixed time shift entries                       ###
     @property
     def midnight(self):
         return self._parse_schedule_items(sys._getframe().f_code.co_name)
@@ -196,3 +213,4 @@ class WeatherInfo(object):
     @property
     def moon(self):
         return self._parse_schedule_items(sys._getframe().f_code.co_name)
+    ######################################################################

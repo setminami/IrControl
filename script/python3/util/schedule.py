@@ -4,14 +4,18 @@
 from .remote import RemoteArgs
 
 class Schedule(object):
-    def __init__(self, name, time, operations):
+    def __init__(self, name, display_info, time, operations):
         self._name = name
+        self._display = display_info
         self._time = time
         self._operations = operations
 
     @property
     def name(self):
         return self._name
+
+    @property
+    def display_info(self): return self._display
 
     @property
     def time(self):
