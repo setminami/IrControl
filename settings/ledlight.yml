@@ -49,7 +49,7 @@ TIMESHIFTS:
 #  [schedule name]: # can set schedule names list, see. util/wheter_info.py "fixed time shift entries"
 #    display:
 #      shorten_name: midNT # max 6 chars
-#      color: black
+#      color: black # colorname follows spec of PIL.ImageColor
 #      # luma.core's colormap might be same with PIL.ImageClor.colormap -> https://pillow.readthedocs.io/en/latest/_modules/PIL/ImageColor.html
 #    schedule:
 #      time: astronomical_tw.begin # named times see. util/wheter_info.py begin & end -> tuple first & second
@@ -65,7 +65,7 @@ TIMESHIFTS:
   midnight: # If you want to adjust set like below
     display:
       shorten_name: midNT
-      color: darkgray
+      color: '#2E2E2E'
     schedule:
       time: astronomical_tw.begin
       relative_time_sec: -7200 # -2h
@@ -77,7 +77,7 @@ TIMESHIFTS:
   astronomical_twilight:
     display:
       shorten_name: asTwLT
-      color: darkblue
+      color: '#0B0B61'
     schedule:
       time: astronomical_tw.begin
       relative_time_sec: 0
@@ -92,7 +92,7 @@ TIMESHIFTS:
   nautical_twilight:
     display:
       shorten_name: naTwLT
-      color: violet
+      color: '#642EFE'
     schedule:
       time: nautical_tw.begin
       relative_time_sec: 0
@@ -104,7 +104,7 @@ TIMESHIFTS:
   civil_twilight:
     display:
       shorten_name: cvTwLT
-      color: palevioletred
+      color: '#BE81F7'
     schedule:
       time: civil_tw.begin
       relative_time_sec: 0
@@ -116,7 +116,7 @@ TIMESHIFTS:
   sunrise_glow:
     display:
       shorten_name: rsGLW
-      color: mediumvioletred
+      color: '#A901DB'
     schedule:
       time: sunrise
       relative_time_sec: 0
@@ -128,7 +128,7 @@ TIMESHIFTS:
   sunrise:
     display:
       shorten_name: sunRs
-      color: lightgray
+      color: '#FFBF00'
     schedule:
       time: sunrise
       relative_time_sec: 3600
@@ -144,7 +144,7 @@ TIMESHIFTS:
   solar_noon:
     display:
       shorten_name: noon
-      color: white
+      color: '#F5F6CE'
     schedule:
       time: solar_noon
       relative_time_sec: -3600
@@ -159,7 +159,7 @@ TIMESHIFTS:
   evening:
     display:
       shorten_name: even
-      color: goldenrod
+      color: '#F7D358'
     schedule:
       time: sunset
       relative_time_sec: -5400 # -1.5h
@@ -177,7 +177,7 @@ TIMESHIFTS:
   sunset:
     display:
       shorten_name: sunSet
-      color: orangered
+      color: '#FFBF00'
     schedule:
       time: sunset
       relative_time_sec: 0
@@ -192,7 +192,7 @@ TIMESHIFTS:
   twilight:
     display:
       shorten_name: TwLT
-      color: violet
+      color: '#BCA9F5'
     schedule:
       time: civil_tw.end
       relative_time_sec: 0
@@ -204,7 +204,7 @@ TIMESHIFTS:
   moon:
     display:
       shorten_name: moon
-      color: darkblue
+      color: '#0B0B61'
     schedule:
       time: astronomical_tw.end
       relative_time_sec: 0

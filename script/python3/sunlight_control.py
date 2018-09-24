@@ -37,7 +37,7 @@ class DrawType(Enum):
         # write each comment as args tuple and copy'n pasetes for tuple declarations in draw_display
         if self == DrawType.CLOCK: # clock_frame_color express (active, inactive)
             # an_lineheight, margin, height_max, cx, base_angle, R, sch_plot_R, R_ratio, label_text, clock_frame_color, needle_color, sec_needle_color, text_color
-            return (8, 4, 64, 30, 270, 30, 3, 0.667, 'Next:', ('yellow', 'darkgray'), 'white', 'red', 'white')
+            return (8, 4, 64, 30, 270, 30, 3, 0.667, 'Next:', ('#F7FE2E', '#424242'), 'white', '#FE2E2E', 'white')
         else:
             return ()
 
@@ -214,7 +214,7 @@ class SunlightControl(Thread):
                 draw.line((cx, cy, cx + mins[0], cy + mins[1]), fill=needle_color)
                 draw.line((cx, cy, cx + secs[0], cy + secs[1]), fill=sec_needle_color)
                 # clock origin
-                draw.ellipse(self._circular(2, origin), fill="white", outline="white")
+                draw.ellipse(self._circular(2, origin), fill=needle_color, outline=needle_color)
 
                 # literal infos
                 # print Most Recent Schedule's name & time
