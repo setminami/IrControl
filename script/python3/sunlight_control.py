@@ -35,9 +35,9 @@ class DrawType(Enum):
     def preprocessor(self):
         # TODO: generalize each draw type args
         # write each comment as args tuple and copy'n pasetes for tuple declarations in draw_display
-        if self == DrawType.CLOCK:
+        if self == DrawType.CLOCK: # clock_frame_color express (active, inactive)
             # an_lineheight, margin, height_max, cx, base_angle, R, sch_plot_R, R_ratio, label_text, clock_frame_color, needle_color, sec_needle_color, text_color
-            return (8, 4, 64, 30, 270, 30, 3, 0.667, 'Next:', 'yellow', 'white', 'red', 'white')
+            return (8, 4, 64, 30, 270, 30, 3, 0.667, 'Next:', ('yellow', 'darkgray'), 'white', 'red', 'white')
         else:
             return ()
 
@@ -168,9 +168,9 @@ class SunlightControl(Thread):
         device = self.device
         with canvas(device) as draw:
             if draw_type == DrawType.CLOCK:
-                an_lineheight, margin, height_max, cx, base_angle, R, \
-                sch_plot_R, R_ratio, label_text, clock_frame_color, needle_color, \
-                sec_needle_color, text_color \
+                an_lineheight, margin, height_max, cx, base_angle, \
+                R, sch_plot_R, R_ratio, label_text, \
+                clock_frame_color, needle_color, sec_needle_color, text_color \
                     = args
                 now = datetime.now(self.timer.timezone)
                 today_date = now.strftime("%y%m%d")
@@ -196,15 +196,19 @@ class SunlightControl(Thread):
 
                 sec_angle = base_angle + (6 * now.second)
                 secs = self.posn(sec_angle, cy - margin - 2)
+                ampm_color = lambda time, ampm: clock_frame_color[0] \
+                        if time.strftime('%p') == ampm else clock_frame_color[1]
                 # dimension ssd1331 96 x 64
                 # to see drawer funcs signeture, see. https://pillow.readthedocs.io/en/latest/reference/ImageDraw.html
                 # because of luma.core.canvas implementation. (see also)
-                # PM circle (x - cx)^2 + (y - cy)^2 = PM_R^2
                 origin = (cx, cy)
-                draw.ellipse(self._circular(R, origin), outline=clock_frame_color)
+
+                # SPEC: e.g., If now AM -> AM frame set active, PM frame inactive
+                # PM circle (x - cx)^2 + (y - cy)^2 = R^2
+                draw.ellipse(self._circular(R, origin), outline=ampm_color(now, 'PM'))
 
                 # AM circle, This circle must be concentric with PM circle
-                draw.ellipse(self._circular(R * R_ratio, origin), outline='blue')
+                draw.ellipse(self._circular(R * R_ratio, origin), outline=ampm_color(now, 'AM'))
 
                 draw.line((cx, cy, cx + hrs[0], cy + hrs[1]), fill=needle_color)
                 draw.line((cx, cy, cx + mins[0], cy + mins[1]), fill=needle_color)
