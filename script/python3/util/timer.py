@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 # this made for python3
 
-from threading import Thread
 from datetime import datetime
 import sys, logging, pytz
 
 from sched import scheduler
+from multiprocessing import Pool, Process
 import time
 # sched is not support datetime but time
 # TypeError: unsupported operand type(s) for +: 'datetime.datetime'
@@ -55,7 +55,6 @@ class LEDLightDayTimer(object):
     def remote(self):
         assert hasattr(self, '_remote')
         return self._remote
-
     @remote.setter
     def remote(self, remote: Remote):
         self._remote = remote
@@ -69,7 +68,7 @@ class LEDLightDayTimer(object):
             if val.time >= now:
                 msg = 'will fire'
                 self._sched.enterabs(time.mktime(val.time.timetuple()), 2,
-                                    self._do, argument=(val.operations, self.remote))
+                                    self._do, argument=(val.name, val.display_info, val.operations, self.remote))
             else:
                 msg = 'not scheduled, time had passed'
             self.logger.info('{} {} @ {}: '.format(val.name, msg,
@@ -77,7 +76,11 @@ class LEDLightDayTimer(object):
             if msg == 'will fire':
                 # expand __str__
                 [self.logger.info('- %s'%o) for o in val.operations]
-        self._sched.run()
+        if not self._sched.empty():
+            p = Process(target=self._sched.run, args=()) # just wait in another process, until all schedules were usedup.
+            p.start()
+        return self._sched.queue
 
-    def _do(self, ops, ins):
+    def _do(self, name, display_info, ops, ins):
+        # name is only Event id, not effective here
         [op.do(ins) for op in ops]

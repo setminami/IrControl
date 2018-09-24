@@ -48,7 +48,7 @@ dtparam=i2c_arm=on
 dtparam=spi=on
 
 # Uncomment this to enable the lirc-rpi module
-dtoverlay=lirc-rpi:gpio_out_pin=25,gpio_in_pin=24,gpio_in_pull=up,invert=on
+dtoverlay=lirc-rpi:gpio_out_pin=27,gpio_in_pin=22,gpio_in_pull=up,invert=on
 # dtoverlay=lirc-rpi
 # dtparam=gpio_in_pin=24
 # dtparam=gpio_out_pin=25

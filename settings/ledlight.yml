@@ -46,18 +46,38 @@ IFTTT:
 LINEAR: False # (no implementation) If True, time settings are auto calculated linearly between TIMESHIFTS.
 # ref. https://api-sunrise-sunset.org/ , each names of operation must be matched with WeatherInfo.properties (e.g., sunrise, sunset)
 TIMESHIFTS:
-  #
+#  [schedule name]: # can set schedule names list, see. util/wheter_info.py "fixed time shift entries"
+#    display:
+#      shorten_name: midNT # max 6 chars
+#      color: black # colorname follows spec of PIL.ImageColor
+#      # luma.core's colormap might be same with PIL.ImageClor.colormap -> https://pillow.readthedocs.io/en/latest/_modules/PIL/ImageColor.html
+#    schedule:
+#      time: astronomical_tw.begin # named times see. util/wheter_info.py begin & end -> tuple first & second
+#      # OR you can set absolute time as '%Y-%m-%dT%H:%M' format and Timezone refes TIMEZONE key.
+#      # OR set relative time from now by seconds, if 'time: ---' and 'relative_time_by_sec: N', fire on after N secs since set the schedule. (this is for debug func)
+#      relative_time_sec: -7200 # relative time by sec
+#    operations: # describe operations with list
+#      # yaml in some condition, interpret on/off as boolean
+#      - command: '0_1' # see. KEYCODE[remote].key
+#        remote: ledlight # If infrared operator, this means KEYCODE's list name.
+#        repeat: 3
+
   midnight: # If you want to adjust set like below
+    display:
+      shorten_name: midNT
+      color: '#2E2E2E'
     schedule:
       time: astronomical_tw.begin
       relative_time_sec: -7200 # -2h
     operations:
-      # yaml in some condition, interpret on/off as boolean
       - command: '0_1' # off
         remote: ledlight
         repeat: 3
 
   astronomical_twilight:
+    display:
+      shorten_name: asTwLT
+      color: '#0B0B61'
     schedule:
       time: astronomical_tw.begin
       relative_time_sec: 0
@@ -70,6 +90,9 @@ TIMESHIFTS:
         repeat: 3
 
   nautical_twilight:
+    display:
+      shorten_name: naTwLT
+      color: '#642EFE'
     schedule:
       time: nautical_tw.begin
       relative_time_sec: 0
@@ -79,6 +102,9 @@ TIMESHIFTS:
         repeat: 3
 
   civil_twilight:
+    display:
+      shorten_name: cvTwLT
+      color: '#BE81F7'
     schedule:
       time: civil_tw.begin
       relative_time_sec: 0
@@ -88,6 +114,9 @@ TIMESHIFTS:
         repeat: 3
 
   sunrise_glow:
+    display:
+      shorten_name: rsGLW
+      color: '#A901DB'
     schedule:
       time: sunrise
       relative_time_sec: 0
@@ -97,6 +126,9 @@ TIMESHIFTS:
         repeat: 3
 
   sunrise:
+    display:
+      shorten_name: sunRs
+      color: '#FFBF00'
     schedule:
       time: sunrise
       relative_time_sec: 3600
@@ -110,6 +142,9 @@ TIMESHIFTS:
 
 
   solar_noon:
+    display:
+      shorten_name: noon
+      color: '#F5F6CE'
     schedule:
       time: solar_noon
       relative_time_sec: -3600
@@ -122,6 +157,9 @@ TIMESHIFTS:
         repeat: 1 # because IFTTT is on TCP
 
   evening:
+    display:
+      shorten_name: even
+      color: '#F7D358'
     schedule:
       time: sunset
       relative_time_sec: -5400 # -1.5h
@@ -137,6 +175,9 @@ TIMESHIFTS:
         repeat: 1 # because IFTTT is on TCP
 
   sunset:
+    display:
+      shorten_name: sunSet
+      color: '#FFBF00'
     schedule:
       time: sunset
       relative_time_sec: 0
@@ -149,6 +190,9 @@ TIMESHIFTS:
         repeat: 1 # because IFTTT is on TCP
 
   twilight:
+    display:
+      shorten_name: TwLT
+      color: '#BCA9F5'
     schedule:
       time: civil_tw.end
       relative_time_sec: 0
@@ -158,9 +202,181 @@ TIMESHIFTS:
         repeat: 3
 
   moon:
+    display:
+      shorten_name: moon
+      color: '#0B0B61'
     schedule:
       time: astronomical_tw.end
       relative_time_sec: 0
+    operations:
+      - command: '1_1' # night blue
+        remote: ledlight
+        repeat: 3
+
+
+TIMESHIFTS_for_debg:
+#  [schedule name]: # can set schedule names list, see. util/wheter_info.py "fixed time shift entries"
+#    display:
+#      shorten_name: midNT # max 6 chars
+#      color: black
+#      # luma.core's colormap might be same with PIL.ImageClor.colormap -> https://pillow.readthedocs.io/en/latest/_modules/PIL/ImageColor.html
+#    schedule:
+#      time: astronomical_tw.begin # named times see. util/wheter_info.py begin & end -> tuple first & second
+#      # OR you can set absolute time as '%Y-%m-%dT%H:%M' format and Timezone refes TIMEZONE key.
+#      # OR set relative time from now by seconds, if 'time: ---' and 'relative_time_by_sec: N', fire on after N secs since set the schedule. (this is for debug func)
+#      relative_time_sec: -7200 # relative time by sec
+#    operations: # describe operations with list
+#      # yaml in some condition, interpret on/off as boolean
+#      - command: '0_1' # see. KEYCODE[remote].key
+#        remote: ledlight # If infrared operator, this means KEYCODE's list name.
+#        repeat: 3
+
+  midnight: # If you want to adjust set like below
+    display:
+      shorten_name: midNT
+      color: black
+    schedule:
+      time: ---
+      relative_time_sec: 120 # -2h
+    operations:
+      - command: '0_1' # off
+        remote: ledlight
+        repeat: 3
+
+  astronomical_twilight:
+    display:
+      shorten_name: asTwLT
+      color: darkblue
+    schedule:
+      time: ---
+      relative_time_sec: 135
+    operations:
+      - command: '0_0' # on
+        remote: ledlight
+        repeat: 3
+      - command: '1_1' # night blue
+        remote: ledlight
+        repeat: 3
+
+  nautical_twilight:
+    display:
+      shorten_name: naTwLT
+      color: violet
+    schedule:
+      time: ---
+      relative_time_sec: 150
+    operations:
+      - command: '2_1' # purple
+        remote: ledlight
+        repeat: 3
+
+  civil_twilight:
+    display:
+      shorten_name: cvTwLT
+      color: palevioletred
+    schedule:
+      time: ---
+      relative_time_sec: 165
+    operations:
+      - command: '3_1' # light purple
+        remote: ledlight
+        repeat: 3
+
+  sunrise_glow:
+    display:
+      shorten_name: rsGLW
+      color: mediumvioletred
+    schedule:
+      time: ---
+      relative_time_sec: 180
+    operations:
+      - command: '4_1' # redly blue
+        remote: ledlight
+        repeat: 3
+
+  sunrise:
+    display:
+      shorten_name: sunRs
+      color: lightgray
+    schedule:
+      time: ---
+      relative_time_sec: 195
+    operations:
+      - command: '1_0' # white
+        remote: ledlight
+        repeat: 3
+      - remote: IFTTT
+        command: weaklight_on
+        repeat: 1 # because IFTTT is on TCP
+
+
+  solar_noon:
+    display:
+      shorten_name: noon
+      color: white
+    schedule:
+      time: ---
+      relative_time_sec: 210
+    operations:
+      - command: '0_3' # up
+        remote: ledlight
+        repeat: 16
+      - remote: IFTTT
+        command: noonlight_on
+        repeat: 1 # because IFTTT is on TCP
+
+  evening:
+    display:
+      shorten_name: even
+      color: goldenrod
+    schedule:
+      time: ---
+      relative_time_sec: 225
+    operations:
+      - command: '4_1' # redly blue
+        remote: ledlight
+        repeat: 3
+      - command: '0_2' # down
+        remote: ledlight
+        repeat: 16
+      - remote: IFTTT
+        command: noonlight_off
+        repeat: 1 # because IFTTT is on TCP
+
+  sunset:
+    display:
+      shorten_name: sunSet
+      color: orangered
+    schedule:
+      time: ---
+      relative_time_sec: 240
+    operations:
+      - command: '5_1' # strong redly blue
+        remote: ledlight
+        repeat: 3
+      - remote: IFTTT
+        command: weaklight_off
+        repeat: 1 # because IFTTT is on TCP
+
+  twilight:
+    display:
+      shorten_name: TwLT
+      color: violet
+    schedule:
+      time: ---
+      relative_time_sec: 255
+    operations:
+      - command: '2_1' # purple
+        remote: ledlight
+        repeat: 3
+
+  moon:
+    display:
+      shorten_name: moon
+      color: darkblue
+    schedule:
+      time: ---
+      relative_time_sec: 270
     operations:
       - command: '1_1' # night blue
         remote: ledlight
