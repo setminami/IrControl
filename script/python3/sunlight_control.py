@@ -36,8 +36,8 @@ class DrawType(Enum):
         # TODO: generalize each draw type args
         # write each comment as args tuple and copy'n pasetes for tuple declarations in draw_display
         if self == DrawType.CLOCK:
-            # an_lineheight, margin, height_max, cx, base_angle, PM_R, AM_R, label_text, clock_frame_color, needle_color, sec_needle_color, text_color
-            return (8, 4, 64, 30, 270, 30, 20, 'Next:', 'yellow', 'white', 'red', 'white')
+            # an_lineheight, margin, height_max, cx, base_angle, R, sch_plot_R, R_ratio, label_text, clock_frame_color, needle_color, sec_needle_color, text_color
+            return (8, 4, 64, 30, 270, 30, 3, 0.667, 'Next:', 'yellow', 'white', 'red', 'white')
         else:
             return ()
 
@@ -168,13 +168,13 @@ class SunlightControl(Thread):
         device = self.device
         with canvas(device) as draw:
             if draw_type == DrawType.CLOCK:
-                an_lineheight, margin, height_max, cx, base_angle, PM_R, AM_R, \
-                label_text, clock_frame_color, needle_color, sec_needle_color, text_color, \
+                an_lineheight, margin, height_max, cx, base_angle, R, \
+                sch_plot_R, R_ratio, label_text, clock_frame_color, needle_color, \
+                sec_needle_color, text_color \
                     = args
                 now = datetime.now(self.timer.timezone)
                 today_date = now.strftime("%y%m%d")
                 today_time = now.strftime('%H:%M:%S')
-                schs = None
                 if (self.active_schedules is not None) and \
                         (len(self.active_schedules) > 0):
                     # SunlightControl.active_schedules is ready
@@ -201,10 +201,10 @@ class SunlightControl(Thread):
                 # because of luma.core.canvas implementation. (see also)
                 # PM circle (x - cx)^2 + (y - cy)^2 = PM_R^2
                 origin = (cx, cy)
-                draw.ellipse(self._circular(PM_R, origin), outline=clock_frame_color)
+                draw.ellipse(self._circular(R, origin), outline=clock_frame_color)
 
                 # AM circle, This circle must be concentric with PM circle
-                draw.ellipse(self._circular(AM_R, origin), outline='blue')
+                draw.ellipse(self._circular(R * R_ratio, origin), outline='blue')
 
                 draw.line((cx, cy, cx + hrs[0], cy + hrs[1]), fill=needle_color)
                 draw.line((cx, cy, cx + mins[0], cy + mins[1]), fill=needle_color)
@@ -227,21 +227,21 @@ class SunlightControl(Thread):
                 self.logger.debug(time.strftime(timeform))
 
                 # plot schedules on ellipse
-                self._plot_schedule(draw, origin, 0, PM_R, AM_R, schs)
+                self._plot_schedule(draw, origin, R, sch_plot_R, R_ratio, schs)
 
     def _circular(self, r, origin):
         return (tuple([x - r for x in origin]), tuple([x + r for x in origin]))
 
-    def _plot_schedule(self, draw, origin, base_angle, PM_R, AM_R, schedules):
+    def _plot_schedule(self, draw, origin, R, plot_R, R_ratio, schedules):
         """ plot schedules on ellipse """
         DISPLAY = 1
-        for s in schedules:
+        for i, s in enumerate(schedules):
             name, time = s
             color = name[DISPLAY]['color']
-            R = AM_R if time.hour < 12 else PM_R
-            draw.ellipse(self._plot_on_circle(origin, base_angle, R, 1.5, time), fill=color)
+            r = lambda r, x: r * R_ratio if x else r
+            draw.ellipse(self._plot_on_circle(origin, r(R, time.hour < 12), r(plot_R, i!=0), time), fill=color)
 
-    def _plot_on_circle(self, origin, base_angle, R, plot_R, time):
+    def _plot_on_circle(self, origin, R, plot_R, time):
         """
         12h = 720min => 1min as degree = (360/720) = 0.5 = 1/2
                              as radian = (2pi/720) = 2.777778pi * 10^-3
@@ -256,8 +256,8 @@ class SunlightControl(Thread):
         # as radian
         # passed_min = (h12 * 60 + time.minute) * 0.002777778 * math.pi
         # degree to radian
-        passed_min = math.radians((h12 * 60 + time.minute) / 2 + base_angle)
-        # here, axis origin is left-up, -> Oy - .... 
+        passed_min = math.radians((h12 * 60 + time.minute) / 2)
+        # here, axis origin is left-up, -> Oy - Rcos...
         return self._circular(plot_R, (Ox + math.sin(passed_min) * R, Oy - math.cos(passed_min) * R))
 
     def run(self):
