@@ -100,6 +100,9 @@ class SunlightControl(Thread):
     def active_schedules(self, val):
         self._active_schedules = val
 
+    def is_usedup(self):
+        return len(self.active_schedules) == 0
+
     # display control
     @property
     def device(self):
@@ -143,8 +146,10 @@ class SunlightControl(Thread):
 
         self.logger.debug('check {}'.format(self))
         while not self.kill_received:
+            print('{} '.format(self.kill_received), end='')
             now = datetime.now(self.timer.timezone)
-            if self.timer.is_usedup():
+            if self.is_usedup():
+                self.logger.debug('########### is_usedup() ################')
                 day = now
                 while len(self.active_schedules) == 0:
                     self.logger.info('Schedules set for day: %s'%day.strftime('%Y-%m-%d'))
@@ -156,6 +161,8 @@ class SunlightControl(Thread):
                         day += timedelta(days=1)
                         continue
                 self.logger.info('Schedules = {}'.format(self.active_schedules))
+            else:
+                self.logger.debug('{}'.format(len(self.active_schedules)))
 
             today_time = now.strftime('%H:%M:%S') # draw per seconds
             if today_time != today_last_time:

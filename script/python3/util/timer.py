@@ -21,9 +21,6 @@ class LEDLightDayTimer(object):
         self._sched = scheduler(time.time, time.sleep)
         self.logger = module_logger(__name__)
 
-    def is_usedup(self):
-        return self._sched.empty()
-
     @property
     def timezone(self):
         assert hasattr(self, '_TZ')
@@ -48,7 +45,7 @@ class LEDLightDayTimer(object):
         return self._schedules
 
     @schedules.setter
-    def schedules(self, schedules: list):
+    def schedules(self, schedules):
         self._schedules = schedules
 
     @property
@@ -60,9 +57,13 @@ class LEDLightDayTimer(object):
         self._remote = remote
 
     def do_schedule(self):
-        """ reset event queue and run """
+        """
+        reset event queue and reschedule and run them
+        """
         if not self._sched.empty():
             [self._sched.cancel(ev) for ev in self._sched.queue]
+            if hasattr(self, '_p'): self._p.join(0.5)
+
         now = datetime.now(self.timezone)
         for val in self.schedules.values():
             if val.time >= now:
@@ -77,10 +78,12 @@ class LEDLightDayTimer(object):
                 # expand __str__
                 [self.logger.info('- %s'%o) for o in val.operations]
         if not self._sched.empty():
-            p = Process(target=self._sched.run, args=()) # just wait in another process, until all schedules were usedup.
-            p.start()
+            self._p = Process(name='schedulings', target=self._sched.run, args=()) # just wait in another process, until all schedules were usedup.
+            self._p.daemon = True
+            self._p.start()
         return self._sched.queue
 
     def _do(self, name, display_info, ops, ins):
         # name is only Event id, not effective here
         [op.do(ins) for op in ops]
+        del self.schedules[name]
