@@ -13,8 +13,9 @@ from util.env import expand_env
 from util.timer import LEDLightDayTimer
 from util.remote import Remote
 from util.weather_info import WeatherInfo
-from util import module_logger
-if os.uname().sysname == 'Darwin':
+from util import module_logger, is_debug
+
+if is_debug():
     print('## the ENV Cannot use luma library ##')
     from display.dummy_for_macOS import get_device, canvas
 else:
@@ -29,6 +30,7 @@ _BASE = os.path.dirname(os.path.abspath(__file__))
 SETTING = os.path.normpath(os.path.join(_BASE, '../../settings/ledlight.yml'))
 
 DEBUG = False
+
 class DrawType(Enum):
     CLOCK = 1
 
@@ -37,7 +39,8 @@ class DrawType(Enum):
         # write each comment as args tuple and copy'n pasetes for tuple declarations in draw_display
         if self == DrawType.CLOCK: # clock_frame_color express (active, inactive)
             # an_lineheight, margin, height_max, cx, base_angle, R, sch_plot_R, R_ratio, label_text, clock_frame_color, needle_color, sec_needle_color, text_color
-            return (8, 4, 64, 30, 270, 30, 3, 0.667, 'Next:', ('#F7FE2E', '#424242'), 'white', '#FE2E2E', 'white')
+            return (8, 4, 64, 30, 270, 30, 3, 0.667, \
+                    'Next:', ('#F7FE2E', '#424242'), 'white', '#FE2E2E', 'white')
         else:
             return ()
 
@@ -60,11 +63,13 @@ class SunlightControl(Thread):
         timer.timezone = self.PARAMS['TIMEZONE']
         self.remotes = {}
         # restrict update lircd for runnning
-        irsend = 'echo' if os.uname().sysname == 'Darwin' \
-            else sp.check_output(['which', self.PARAMS['IRSEND_CMD']]).decode('utf-8')[:-1]
+        irsend, httpcmd = 'echo' if is_debug() \
+            else sp.check_output(['which', self.PARAMS['IRSEND_CMD']]).decode('utf-8')[:-1], \
+            'echo' if is_debug() \
+                else sp.check_output(['which', 'curl']).decode('utf-8')[:-1]
         ifttt = self.PARAMS['IFTTT']
         for x in self.PARAMS['KEYCODE']:
-            remote = Remote(irsend, ifttt['path'], ifttt['key'])
+            remote = Remote(irsend, httpcmd, ifttt['path'], ifttt['key'])
             remote.setup_ir_keycodes(x)
             self.remotes[x['name']] = remote
         timer.remote = self.remotes['ledlight']
@@ -117,7 +122,7 @@ class SunlightControl(Thread):
     # operate transferred instance
     def _setup_wether_info(self, day):
         # TODO: check memory usage
-        TIMESHIFTS = 'TIMESHIFTS' if os.uname().sysname != 'Darwin' else 'TIMESHIFTS_for_debg'
+        TIMESHIFTS = 'TIMESHIFTS' if not is_debug() else 'TIMESHIFTS_for_debg'
         self._timer.weather = WeatherInfo(day, self.PARAMS['SUNLIGHT_STATUS_API'],
                                             self.PARAMS[TIMESHIFTS],
                                             self.PARAMS['TIMEZONE'])
@@ -140,13 +145,14 @@ class SunlightControl(Thread):
     def core_process(self, draw_type):
         self.active_schedules = None
         today_last_time = "Unknown"
-        device = self.device
 
         args = draw_type.preprocessor()
 
         self.logger.debug('check {}'.format(self))
+        # Debug
+        display_name, dateform, timeform, sch_len = "", "", "", 0
+
         while not self.kill_received:
-            print('{} '.format(self.kill_received), end='')
             now = datetime.now(self.timer.timezone)
             if self.is_usedup():
                 self.logger.debug('########### is_usedup() ################')
@@ -162,17 +168,23 @@ class SunlightControl(Thread):
                         continue
                 self.logger.info('Schedules = {}'.format(self.active_schedules))
             else:
-                self.logger.debug('{}'.format(len(self.active_schedules)))
+                if sch_len != len(self.active_schedules):
+                    self.logger.debug('num of remaining schedules = {}'.format(len(self.active_schedules)))
+                    sch_len = len(self.active_schedules)
 
             today_time = now.strftime('%H:%M:%S') # draw per seconds
             if today_time != today_last_time:
                 today_last_time = today_time
-                self.draw_display(draw_type, args)
+                literal_outputs = self.draw_display(self.device, draw_type, args, is_debug())
+                if is_debug() and (literal_outputs != (display_name, dateform, timeform)):
+                    display_name, dateform, timeform = literal_outputs
+                    self.logger.debug(display_name)
+                    self.logger.debug(dateform)
+                    self.logger.debug(timeform)
 
             sleep(0.1)
 
-    def draw_display(self, draw_type, args):
-        device = self.device
+    def draw_display(self, device, draw_type, args, is_debug):
         with canvas(device) as draw:
             if draw_type == DrawType.CLOCK:
                 an_lineheight, margin, height_max, cx, base_angle, \
@@ -229,16 +241,14 @@ class SunlightControl(Thread):
                 DISPLAY = 1 # only for readability
                 display_name, display_color = name[DISPLAY]['shorten_name'], name[DISPLAY]['color']
                 draw.text((1.8 * (cx + margin), cy - an_lineheight * 2.4), display_name, fill=display_color, outline=text_color)
-                self.logger.debug(display_name)
                 # output most recent schedule's name
-                dateform, timeform = '%y%m%d', '%H:%M'
-                draw.text((1.8 * (cx + margin), cy - an_lineheight * 1), time.strftime(dateform), fill=text_color)
-                self.logger.debug(time.strftime(dateform))
-                draw.text((1.9 * (cx + margin), cy), time.strftime(timeform), fill=text_color)
-                self.logger.debug(time.strftime(timeform))
+                dateform, timeform = time.strftime('%y%m%d'), time.strftime('%H:%M')
+                draw.text((1.8 * (cx + margin), cy - an_lineheight * 1), dateform, fill=text_color)
+                draw.text((1.9 * (cx + margin), cy), timeform, fill=text_color)
 
                 # plot schedules on ellipse
                 self._plot_schedule(draw, origin, R, sch_plot_R, R_ratio, schs)
+                return display_name, dateform, timeform
 
     def _circular(self, r, origin):
         return (tuple([x - r for x in origin]), tuple([x + r for x in origin]))

@@ -4,13 +4,14 @@
 from itertools import product
 import subprocess as sp
 
-from util import module_logger
+from util import module_logger, is_debug
 
 class Remote(object):
     NOTAVAILABLE = 'NA'
 
-    def __init__(self, infrared_cmd, webhook_path, key):
-        self._ircmd, self._ifttt_path, self._ifttt_key = infrared_cmd, webhook_path, key
+    def __init__(self, infrared_cmd, http_cmd, webhook_path, key):
+        self._ircmd, self.http_cmd, self._ifttt_path, self._ifttt_key = \
+                                    infrared_cmd, http_cmd, webhook_path, key
         self.logger = module_logger(__name__)
 
     def setup_ir_keycodes(self, keycodes):
@@ -19,16 +20,18 @@ class Remote(object):
 
     def send_IR_key(self, key, repeat=1):
         cmd = '%s -#%d SEND_ONCE ledlight %s'%(self._ircmd, repeat, key)
-        self.logger.info(cmd)
+        # WANTFIX: Why it prints many same lines when logger has been called from sched.run??
+        print(cmd)
         sp.call(cmd, shell=True)
 
     def send_HTTP_trigger(self, endpoint, repeat=1):
         ifttt_path = lambda key: self._ifttt_path.format(endpoint, key)
-        self.logger.info('run {} {} for {}'.format(endpoint, repeat, ifttt_path('********')))
+        # WANTFIX: Why it prints many same lines when logger has been called from sched.run??
+        print('run {} {} for {}'.format(endpoint, repeat, ifttt_path('********')))
         for i in range(repeat):
-            self.logger.info('try %d: %s'%(i, ifttt_path('********')))
+            print('try %d: %s'%(i, ifttt_path('********')))
             # noneed to use pycurl
-            sp.call('curl %s'%ifttt_path(self._ifttt_key), shell=True)
+            sp.call('%s %s'%(self.http_cmd, ifttt_path(self._ifttt_key)), shell=True)
 
     @property
     def name(self): return self._name
@@ -73,11 +76,11 @@ class RemoteArgs(object):
             command: * (str)
             repeat: (int)
     """
-    devicefunc = {'ledlight': 'send_IR_key',
+    devicefuncs = {'ledlight': 'send_IR_key',
                     'IFTTT': 'send_HTTP_trigger'}
 
     def __str__(self):
-        return '{}(name: {}, args:{})'.format(__class__.__name__, self.name, self.args)
+        return '{}(name: {}, args:{})'.format(__class__.__name__, self.function, self.args)
 
     def __init__(self, item):
         self._funcname = item['remote']
@@ -90,9 +93,9 @@ class RemoteArgs(object):
         self.logger = module_logger(__name__)
 
     @property
-    def name(self):
+    def function(self):
         """ I know connectors between yaml and Remote methods. """
-        return self.devicefunc[self._funcname]
+        return self.devicefuncs[self._funcname]
 
     @property
     def args(self):
@@ -100,6 +103,6 @@ class RemoteArgs(object):
 
     def do(self, instance):
         assert isinstance(instance, Remote)
-
-        self.logger.info('RemoteArgs.do ran : try to eval Remote.{}{}'.format(self.name, self.args))
-        eval('instance.{}{}'.format(self.name, self.args))
+        # WANTFIX: Why it prints many same lines when logger has been called from sched.run??
+        print('ran RemoteArgs.do: try to eval Remote.{}{}'.format(self.function, self.args))
+        eval('instance.{}{}'.format(self.function, self.args))
