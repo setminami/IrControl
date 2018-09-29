@@ -26,8 +26,7 @@ Codename:	stretch
 
 #### circuit diagram
 Maybe, easy to configure, after H/W settings.
-![](./img/irc_pi_schem.png)
-[upverter](https://upverter.com/setminami/951bfa33c4296aea/SunLight/)
+[![SunLight by setminami 951bfa33c4296aea - Upverter](https://upverter.com/setminami/951bfa33c4296aea/SunLight/embed_img/15382457110000/)](https://upverter.com/setminami/951bfa33c4296aea/SunLight/#/)
 
 - refs
   - [GL538](http://akizukidenshi.com/download/ds/sharp/gl537_gl538.pdf)
