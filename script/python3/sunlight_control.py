@@ -13,6 +13,7 @@ from util.env import expand_env
 from util.timer import LEDLightDayTimer
 from util.remote import Remote
 from util.weather_info import WeatherInfo
+from util.thermo_info import ThermoInfo
 from util import module_logger, is_debug
 
 if is_debug():
@@ -22,6 +23,7 @@ else:
     from luma.core.render import canvas
     from display.demo_opts import get_device
 
+from PIL import ImageFont
 from time import sleep
 
 __VERSION__ = "1.0"
@@ -38,9 +40,11 @@ class DrawType(Enum):
         # TODO: generalize each draw type args
         # write each comment as args tuple and copy'n pasetes for tuple declarations in draw_display
         if self == DrawType.CLOCK: # clock_frame_color express (active, inactive)
-            # an_lineheight, margin, height_max, cx, base_angle, R, sch_plot_R, R_ratio, label_text, clock_frame_color, needle_color, sec_needle_color, text_color
+            font1 = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf", 8, encoding="unic")
+            font2 = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf", 12, encoding="unic")
+            # an_lineheight, margin, height_max, cx, base_angle, R, sch_plot_R, R_ratio, label_text, clock_frame_color, needle_color, sec_needle_color, text_color, font1, font2
             return (8, 4, 64, 30, 270, 30, 3, 0.667, \
-                    'Next:', ('#F7FE2E', '#424242'), 'white', '#FE2E2E', 'white')
+                    'Next:', ('#F7FE2E', '#424242'), 'white', '#FE2E2E', 'white', font1, font2)
         else:
             return ()
 
@@ -145,6 +149,7 @@ class SunlightControl(Thread):
     def core_process(self, draw_type):
         self.active_schedules = None
         today_last_time = "Unknown"
+        tank_temp = None
 
         args = draw_type.preprocessor()
 
@@ -172,10 +177,17 @@ class SunlightControl(Thread):
                     self.logger.debug('num of remaining schedules = {}'.format(len(self.active_schedules)))
                     sch_len = len(self.active_schedules)
 
+            crc = tank_temp[1] if tank_temp is not None else None
+            with ThermoInfo('28-0417004c49ff', crc) as thermo: _tank_temp = thermo.check()
+            tank_temp = _tank_temp if _tank_temp is not None else tank_temp
+
             today_time = now.strftime('%H:%M:%S') # draw per seconds
             if today_time != today_last_time:
                 today_last_time = today_time
-                literal_outputs = self.draw_display(self.device, draw_type, args, is_debug())
+                literal_outputs = self.draw_display(self.device,
+                                                    draw_type,
+                                                    args,
+                                                    u'%2.1fC'%tank_temp[0], is_debug())
                 if is_debug() and (literal_outputs != (display_name, dateform, timeform)):
                     display_name, dateform, timeform = literal_outputs
                     self.logger.debug(display_name)
@@ -184,12 +196,13 @@ class SunlightControl(Thread):
 
             sleep(0.1)
 
-    def draw_display(self, device, draw_type, args, is_debug):
+    def draw_display(self, device, draw_type, args, temperature, is_debug):
         with canvas(device) as draw:
             if draw_type == DrawType.CLOCK:
                 an_lineheight, margin, height_max, cx, base_angle, \
                 R, sch_plot_R, R_ratio, label_text, \
-                clock_frame_color, needle_color, sec_needle_color, text_color \
+                clock_frame_color, needle_color, sec_needle_color, text_color, \
+                font1, font2 \
                     = args
                 now = datetime.now(self.timer.timezone)
                 today_date = now.strftime("%y%m%d")
@@ -237,14 +250,15 @@ class SunlightControl(Thread):
 
                 # literal infos
                 # print Most Recent Schedule's name & time
-                draw.text((1.8 * (cx + margin), cy - an_lineheight * 4), label_text, fill=text_color)
+                draw.text((1.8 * (cx + margin), cy - an_lineheight * 4), label_text, fill=text_color, font=font1)
                 DISPLAY = 1 # only for readability
                 display_name, display_color = name[DISPLAY]['shorten_name'], name[DISPLAY]['color']
-                draw.text((1.8 * (cx + margin), cy - an_lineheight * 2.4), display_name, fill=display_color, outline=text_color)
+                draw.text((1.8 * (cx + margin), cy - an_lineheight * 2.4), display_name, fill=display_color, outline=text_color, font=font1)
                 # output most recent schedule's name
                 dateform, timeform = time.strftime('%y%m%d'), time.strftime('%H:%M')
-                draw.text((1.8 * (cx + margin), cy - an_lineheight * 1), dateform, fill=text_color)
-                draw.text((1.9 * (cx + margin), cy), timeform, fill=text_color)
+                draw.text((1.8 * (cx + margin), cy - an_lineheight), dateform, fill=text_color, font=font1)
+                draw.text((1.9 * (cx + margin), cy), timeform, fill=text_color, font=font1)
+                draw.text((1.75 * (cx + margin), cy + an_lineheight * 2), temperature, fill=clock_frame_color[1], font=font2)
 
                 # plot schedules on ellipse
                 self._plot_schedule(draw, origin, R, sch_plot_R, R_ratio, schs)
