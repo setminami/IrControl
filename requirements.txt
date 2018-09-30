@@ -1,9 +1,18 @@
 pytz
 python-dateutil
+pyyaml
 
-# pycurl # might be not able to install pycurl because of openssl then, commentout this line and try below
-#  if macOS, run. ruby -e "$(/usr/bin/curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-# check curl-config path and
-# export PYCURL_CURL_CONFIG=/path/to/your/curl-config
+# pycurl  # might be not able to install pycurl because of openssl then, commentout this line and try below
+#
+# if macOS bare terminal, run.
+# ruby -e "$(/usr/bin/curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+# export PYCURL_CURL_CONFIG=`which curl-config`
+# pip install --compile pycurl
+#
+# if pyCharm on macOS(mojave)
+# choose Terminal -> workon SunlightControl
+# ruby -e "$(/usr/bin/curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+# export PYCURL_CURL_CONFIG=`which curl-config`
+# export PYCURL_SSL_LIBRARY=openssl
 # pip install --compile pycurl
 # if raspi stretch at least, run 'sudo pip install pycurl' simply.

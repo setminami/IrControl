@@ -2,7 +2,7 @@
 # this made for python3
 import logging, os
 
-LOGLV = logging.DEBUG if os.uname().sysname == 'Darwin' else logging.INFO
+def is_debug(sysname='Darwin'): return os.uname().sysname == sysname
 
 def module_logger(modname):
     logger = logging.getLogger(modname)
@@ -11,5 +11,5 @@ def module_logger(modname):
                                     datefmt='%y%m%dT%H%M%S')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-    logger.setLevel(LOGLV)
+    logger.setLevel(logging.DEBUG if is_debug() else logging.INFO)
     return logger

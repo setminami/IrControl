@@ -21,9 +21,6 @@ class LEDLightDayTimer(object):
         self._sched = scheduler(time.time, time.sleep)
         self.logger = module_logger(__name__)
 
-    def is_usedup(self):
-        return self._sched.empty()
-
     @property
     def timezone(self):
         assert hasattr(self, '_TZ')
@@ -40,16 +37,7 @@ class LEDLightDayTimer(object):
     @weather.setter
     def weather(self, val:WeatherInfo):
         self._weather = val
-        self.schedules = self._weather.timeshift_today
-
-    @property
-    def schedules(self):
-        assert hasattr(self, '_schedules')
-        return self._schedules
-
-    @schedules.setter
-    def schedules(self, schedules: list):
-        self._schedules = schedules
+        self._schedules = self._weather.timeshift_today
 
     @property
     def remote(self):
@@ -60,27 +48,45 @@ class LEDLightDayTimer(object):
         self._remote = remote
 
     def do_schedule(self):
-        """ reset event queue and run """
+        """
+        reset event queue and reschedule and run them
+        """
+        FIRE, DISSMISS = 'will fire', 'not scheduled, time had passed'
         if not self._sched.empty():
             [self._sched.cancel(ev) for ev in self._sched.queue]
+            if hasattr(self, '_p'):
+                self.logger.info("try to join() Process. {}".format(self._p))
+                self._p.join(0.5)
+                if not self._p.is_alive():
+                    self.logger.info("joined Process.")
+                else:
+                    self.logger.info("is alive yet.")
+                self._p.terminate()
+
         now = datetime.now(self.timezone)
-        for val in self.schedules.values():
+        for val in self._schedules.values():
             if val.time >= now:
-                msg = 'will fire'
+                msg = FIRE
                 self._sched.enterabs(time.mktime(val.time.timetuple()), 2,
                                     self._do, argument=(val.name, val.display_info, val.operations, self.remote))
             else:
-                msg = 'not scheduled, time had passed'
+                msg = DISSMISS
             self.logger.info('{} {} @ {}: '.format(val.name, msg,
                                                 val.time.strftime('%Y-%m-%d %H:%M:%S%z')))
-            if msg == 'will fire':
+            if msg == FIRE:
                 # expand __str__
                 [self.logger.info('- %s'%o) for o in val.operations]
         if not self._sched.empty():
-            p = Process(target=self._sched.run, args=()) # just wait in another process, until all schedules were usedup.
-            p.start()
+            # just wait in another process, until all schedules were usedup.
+            self._p = Process(name='schedulings', target=self._sched.run, args=())
+            self._p.daemon = True
+            self._p.start()
+            self.logger.info('Process @{} {} has (re)started.'.format(self._p, self._p.pid))
         return self._sched.queue
 
     def _do(self, name, display_info, ops, ins):
-        # name is only Event id, not effective here
-        [op.do(ins) for op in ops]
+        # name and display_info are only Event id, not effective here
+        self.logger.debug('&&&&&&&&&&&&& len(ops) = %d &&&&&&&&&&&&&&&'%len(ops))
+        for op in ops:
+            op.do(ins)
+        del self._schedules[name]
