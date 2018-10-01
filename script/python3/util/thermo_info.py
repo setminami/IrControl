@@ -11,7 +11,8 @@ class ThermoInfo(object):
     device_path = '/sys/bus/w1/devices/{}/w1_slave'
 
     def __init__(self, rom_code, crc):
-        self._devfile = self.device_path.format(rom_code)
+        self._devfile = self.device_path.format(rom_code) \
+                            if not is_debug() else '../../environment/w1_demo'
         self._crc = crc
         self.logger = module_logger(__class__.__name__)
 

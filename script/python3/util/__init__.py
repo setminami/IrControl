@@ -2,7 +2,9 @@
 # this made for python3
 import logging, os
 
-def is_debug(sysname='Darwin'): return os.uname().sysname == sysname
+def is_debug(sysname='Darwin'):
+    """ for device debug """
+    return os.uname().sysname == sysname
 
 def module_logger(modname):
     logger = logging.getLogger(modname)

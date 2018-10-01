@@ -367,5 +367,7 @@ fabric.properties
 # Sonarlint plugin
 .idea/sonarlint
 
+# cProfiler file
+output.prof
 
 # End of https://www.gitignore.io/api/ruby,macos,python,pycharm

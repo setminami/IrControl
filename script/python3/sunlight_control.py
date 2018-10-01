@@ -29,7 +29,9 @@ from time import sleep
 __VERSION__ = "1.0"
 
 _BASE = os.path.dirname(os.path.abspath(__file__))
-SETTING = os.path.normpath(os.path.join(_BASE, '../../settings/ledlight.yml'))
+# for avoid virtualenv
+SETTING = os.path.normpath(os.path.join(_BASE, '../../settings/ledlight.yml')) \
+                if not is_debug() else os.path.expanduser('~/Github/SunlightControl/settings/ledlight.yml')
 
 DEBUG = False
 
@@ -40,14 +42,18 @@ class DrawType(Enum):
         # TODO: generalize each draw type args
         # write each comment as args tuple and copy'n pasetes for tuple declarations in draw_display
         if self == DrawType.CLOCK: # clock_frame_color express (active, inactive)
-            font1 = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf", 8, encoding="unic")
-            font2 = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf", 12, encoding="unic")
-            # an_lineheight, margin, height_max, cx, base_angle, R, sch_plot_R, R_ratio, label_text, clock_frame_color, needle_color, sec_needle_color, text_color, font1, font2
+            font_path = '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf' \
+                if not is_debug() else '/System/Library/Fonts/Apple Braille.ttf'
+            font_small = ImageFont.truetype(font_path, 8, encoding="unic")
+            font_large = ImageFont.truetype(font_path, 12, encoding="unic")
+            # an_lineheight, margin, height_max, cx, base_angle, R, sch_plot_R, R_ratio, \
+            #   label_text, clock_frame_color, needle_color, sec_needle_color, text_color, font1, font2
             return (8, 4, 64, 30, 270, 30, 3, 0.667, \
-                    'Next:', ('#F7FE2E', '#424242'), 'white', '#FE2E2E', 'white', font1, font2)
+                    'Next:', ('#F7FE2E', '#424242'), 'white', '#FE2E2E', 'white', font_small, font_large)
         else:
             return ()
 
+_SLEEP = 0.5
 class SunlightControl(Thread):
 
     def __init__(self, timer, per_sec, setting=None):
@@ -147,6 +153,10 @@ class SunlightControl(Thread):
         return self._scheduling()
 
     def core_process(self, draw_type):
+        if DEBUG:
+            import tracemalloc
+            tracemalloc.start()
+
         self.active_schedules = None
         today_last_time = "Unknown"
         tank_temp = None
@@ -158,6 +168,8 @@ class SunlightControl(Thread):
         display_name, dateform, timeform, sch_len = "", "", "", 0
 
         while not self.kill_received:
+            if DEBUG:
+                snap1 = tracemalloc.take_snapshot()
             now = datetime.now(self.timer.timezone)
             if self.is_usedup():
                 self.logger.debug('########### is_usedup() ################')
@@ -193,8 +205,11 @@ class SunlightControl(Thread):
                     self.logger.debug(display_name)
                     self.logger.debug(dateform)
                     self.logger.debug(timeform)
-
-            sleep(0.1)
+            if DEBUG:
+                snap2 = tracemalloc.take_snapshot()
+                stats = snap2.compare_to(snap1, 'lineno')
+                [print(s) for s in stats]
+            sleep(_SLEEP)
 
     def draw_display(self, device, draw_type, args, temperature, is_debug):
         with canvas(device) as draw:
@@ -315,13 +330,11 @@ class SunlightControl(Thread):
             help='config file that wrote by yaml describe params, see default=%s'%SETTING)
         return argParser.parse_args()
 
-if __name__ == '__main__':
-    # use like shared flag
-    kill = Event()
+@profile
+def main():
+    """ for memory_profile """
     try:
-        # ins.setDaemon(True)
         ins = SunlightControl(LEDLightDayTimer(), 30 * 60)
-        # ins.setDaemon(True)
 
         ins.start()
         ins.join()
@@ -329,3 +342,6 @@ if __name__ == '__main__':
         ins.kill()
         print('Caught KeyboardInterrupt. schedules were cancelled.')
         exit(0)
+
+if __name__ == '__main__':
+    main()
