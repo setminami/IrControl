@@ -1,0 +1,356 @@
+$ python3 -m memory_profiler ./sunlight_control.py
+## the ENV Cannot use luma library ##
+dummy implementation
+[181002T023902 | SunlightControl | DEBUG] check <SunlightControl(Thread-1, started 123145363083264)>
+[181002T023902 | SunlightControl | DEBUG] ########### is_usedup() ################
+[181002T023902 | SunlightControl | INFO] Schedules set for day: 2018-10-02
+[181002T023902 | util.timer | INFO] midnight will fire @ 2018-10-02 02:39:22+0900:
+[181002T023902 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('off', 3))
+[181002T023902 | util.timer | INFO] astronomical_twilight will fire @ 2018-10-02 02:39:37+0900:
+[181002T023902 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('on', 3))
+[181002T023902 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('b0', 3))
+[181002T023902 | util.timer | INFO] nautical_twilight will fire @ 2018-10-02 02:39:52+0900:
+[181002T023902 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('b1', 3))
+[181002T023902 | util.timer | INFO] civil_twilight will fire @ 2018-10-02 02:40:07+0900:
+[181002T023902 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('b2', 3))
+[181002T023902 | util.timer | INFO] sunrise_glow will fire @ 2018-10-02 02:40:22+0900:
+[181002T023902 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('b3', 3))
+[181002T023902 | util.timer | INFO] sunrise will fire @ 2018-10-02 02:40:37+0900:
+[181002T023902 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('white', 3))
+[181002T023902 | util.timer | INFO] - RemoteArgs(name: send_HTTP_trigger, args:('weaklight_on', 1))
+[181002T023902 | util.timer | INFO] solar_noon will fire @ 2018-10-02 02:40:52+0900:
+[181002T023902 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('up', 16))
+[181002T023902 | util.timer | INFO] - RemoteArgs(name: send_HTTP_trigger, args:('noonlight_on', 1))
+[181002T023902 | util.timer | INFO] evening will fire @ 2018-10-02 02:41:07+0900:
+[181002T023902 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('b3', 3))
+[181002T023902 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('down', 16))
+[181002T023902 | util.timer | INFO] - RemoteArgs(name: send_HTTP_trigger, args:('noonlight_off', 1))
+[181002T023902 | util.timer | INFO] sunset will fire @ 2018-10-02 02:41:22+0900:
+[181002T023902 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('b4', 3))
+[181002T023902 | util.timer | INFO] - RemoteArgs(name: send_HTTP_trigger, args:('weaklight_off', 1))
+[181002T023902 | util.timer | INFO] twilight will fire @ 2018-10-02 02:41:37+0900:
+[181002T023902 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('b1', 3))
+[181002T023902 | util.timer | INFO] moon will fire @ 2018-10-02 02:41:52+0900:
+[181002T023902 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('b0', 3))
+[181002T023902 | util.timer | INFO] Process @<Process(schedulings, started daemon)> 31541 has (re)started.
+[181002T023902 | SunlightControl | INFO] Schedules = [Event(time=1538415562.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('midnight', {'shorten_name': 'midNT', 'color': 'black'}, [<util.remote.RemoteArgs object at 0x10bba57f0>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538415577.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('astronomical_twilight', {'shorten_name': 'asTwLT', 'color': 'darkblue'}, [<util.remote.RemoteArgs object at 0x10bba5898>, <util.remote.RemoteArgs object at 0x10bba5668>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538415592.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('nautical_twilight', {'shorten_name': 'naTwLT', 'color': 'violet'}, [<util.remote.RemoteArgs object at 0x10bba5eb8>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538415607.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('civil_twilight', {'shorten_name': 'cvTwLT', 'color': 'palevioletred'}, [<util.remote.RemoteArgs object at 0x10bba5d30>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538415622.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('sunrise_glow', {'shorten_name': 'rsGLW', 'color': 'mediumvioletred'}, [<util.remote.RemoteArgs object at 0x10bba5dd8>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538415637.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('sunrise', {'shorten_name': 'sunRs', 'color': 'lightgray'}, [<util.remote.RemoteArgs object at 0x10bba5a20>, <util.remote.RemoteArgs object at 0x10bba8358>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538415652.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('solar_noon', {'shorten_name': 'noon', 'color': 'white'}, [<util.remote.RemoteArgs object at 0x10bba8160>, <util.remote.RemoteArgs object at 0x10bba8588>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538415667.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('evening', {'shorten_name': 'even', 'color': 'goldenrod'}, [<util.remote.RemoteArgs object at 0x10bba86d8>, <util.remote.RemoteArgs object at 0x10bba87b8>, <util.remote.RemoteArgs object at 0x10bba8978>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538415682.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('sunset', {'shorten_name': 'sunSet', 'color': 'orangered'}, [<util.remote.RemoteArgs object at 0x10bba8ef0>, <util.remote.RemoteArgs object at 0x10bba8a90>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538415697.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('twilight', {'shorten_name': 'TwLT', 'color': 'violet'}, [<util.remote.RemoteArgs object at 0x10bba8cc0>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538415712.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('moon', {'shorten_name': 'moon', 'color': 'darkblue'}, [<util.remote.RemoteArgs object at 0x10bbaba58>], <util.remote.Remote object at 0x10bb94320>), kwargs={})]
+[181002T023902 | SunlightControl | DEBUG] midNT
+[181002T023902 | SunlightControl | DEBUG] 181002
+[181002T023902 | SunlightControl | DEBUG] 02:39
+[181002T023902 | SunlightControl | DEBUG] num of remaining schedules = 11
+[181002T023922 | util.timer | DEBUG] &&&&&&&&&&&&& len(ops) = 1 &&&&&&&&&&&&&&&
+ran RemoteArgs.do: try to eval Remote.send_IR_key('off', 3)
+echo -#3 SEND_ONCE ledlight off
+-#3 SEND_ONCE ledlight off
+[181002T023922 | SunlightControl | DEBUG] num of remaining schedules = 10
+[181002T023922 | SunlightControl | DEBUG] asTwLT
+[181002T023922 | SunlightControl | DEBUG] 181002
+[181002T023922 | SunlightControl | DEBUG] 02:39
+[181002T023937 | util.timer | DEBUG] &&&&&&&&&&&&& len(ops) = 2 &&&&&&&&&&&&&&&
+ran RemoteArgs.do: try to eval Remote.send_IR_key('on', 3)
+echo -#3 SEND_ONCE ledlight on
+-#3 SEND_ONCE ledlight on
+ran RemoteArgs.do: try to eval Remote.send_IR_key('b0', 3)
+echo -#3 SEND_ONCE ledlight b0
+[181002T023937 | SunlightControl | DEBUG] num of remaining schedules = 9
+-#3 SEND_ONCE ledlight b0
+[181002T023937 | SunlightControl | DEBUG] naTwLT
+[181002T023937 | SunlightControl | DEBUG] 181002
+[181002T023937 | SunlightControl | DEBUG] 02:39
+[181002T023952 | util.timer | DEBUG] &&&&&&&&&&&&& len(ops) = 1 &&&&&&&&&&&&&&&
+ran RemoteArgs.do: try to eval Remote.send_IR_key('b1', 3)
+echo -#3 SEND_ONCE ledlight b1
+-#3 SEND_ONCE ledlight b1
+[181002T023952 | SunlightControl | DEBUG] num of remaining schedules = 8
+[181002T023952 | SunlightControl | DEBUG] cvTwLT
+[181002T023952 | SunlightControl | DEBUG] 181002
+[181002T023952 | SunlightControl | DEBUG] 02:40
+[181002T024007 | util.timer | DEBUG] &&&&&&&&&&&&& len(ops) = 1 &&&&&&&&&&&&&&&
+ran RemoteArgs.do: try to eval Remote.send_IR_key('b2', 3)
+echo -#3 SEND_ONCE ledlight b2
+-#3 SEND_ONCE ledlight b2
+[181002T024007 | SunlightControl | DEBUG] num of remaining schedules = 7
+[181002T024007 | SunlightControl | DEBUG] rsGLW
+[181002T024007 | SunlightControl | DEBUG] 181002
+[181002T024007 | SunlightControl | DEBUG] 02:40
+[181002T024022 | util.timer | DEBUG] &&&&&&&&&&&&& len(ops) = 1 &&&&&&&&&&&&&&&
+ran RemoteArgs.do: try to eval Remote.send_IR_key('b3', 3)
+echo -#3 SEND_ONCE ledlight b3
+-#3 SEND_ONCE ledlight b3
+[181002T024022 | SunlightControl | DEBUG] num of remaining schedules = 6
+[181002T024022 | SunlightControl | DEBUG] sunRs
+[181002T024022 | SunlightControl | DEBUG] 181002
+[181002T024022 | SunlightControl | DEBUG] 02:40
+[181002T024037 | SunlightControl | DEBUG] num of remaining schedules = 5
+[181002T024037 | util.timer | DEBUG] &&&&&&&&&&&&& len(ops) = 2 &&&&&&&&&&&&&&&
+ran RemoteArgs.do: try to eval Remote.send_IR_key('white', 3)
+echo -#3 SEND_ONCE ledlight white
+[181002T024037 | SunlightControl | DEBUG] noon
+[181002T024037 | SunlightControl | DEBUG] 181002
+[181002T024037 | SunlightControl | DEBUG] 02:40
+-#3 SEND_ONCE ledlight white
+ran RemoteArgs.do: try to eval Remote.send_HTTP_trigger('weaklight_on', 1)
+run weaklight_on 1 for https://maker.ifttt.com/trigger/weaklight_on/with/key/********
+try 0: https://maker.ifttt.com/trigger/weaklight_on/with/key/********
+https://maker.ifttt.com/trigger/weaklight_on/with/key/
+[181002T024052 | util.timer | DEBUG] &&&&&&&&&&&&& len(ops) = 2 &&&&&&&&&&&&&&&
+ran RemoteArgs.do: try to eval Remote.send_IR_key('up', 16)
+echo -#16 SEND_ONCE ledlight up
+-#16 SEND_ONCE ledlight up
+ran RemoteArgs.do: try to eval Remote.send_HTTP_trigger('noonlight_on', 1)
+run noonlight_on 1 for https://maker.ifttt.com/trigger/noonlight_on/with/key/********
+try 0: https://maker.ifttt.com/trigger/noonlight_on/with/key/********
+https://maker.ifttt.com/trigger/noonlight_on/with/key/
+[181002T024052 | SunlightControl | DEBUG] num of remaining schedules = 4
+[181002T024052 | SunlightControl | DEBUG] even
+[181002T024052 | SunlightControl | DEBUG] 181002
+[181002T024052 | SunlightControl | DEBUG] 02:41
+[181002T024107 | util.timer | DEBUG] &&&&&&&&&&&&& len(ops) = 3 &&&&&&&&&&&&&&&
+ran RemoteArgs.do: try to eval Remote.send_IR_key('b3', 3)
+echo -#3 SEND_ONCE ledlight b3
+-#3 SEND_ONCE ledlight b3
+ran RemoteArgs.do: try to eval Remote.send_IR_key('down', 16)
+echo -#16 SEND_ONCE ledlight down
+-#16 SEND_ONCE ledlight down
+ran RemoteArgs.do: try to eval Remote.send_HTTP_trigger('noonlight_off', 1)
+run noonlight_off 1 for https://maker.ifttt.com/trigger/noonlight_off/with/key/********
+try 0: https://maker.ifttt.com/trigger/noonlight_off/with/key/********
+https://maker.ifttt.com/trigger/noonlight_off/with/key/
+[181002T024107 | SunlightControl | DEBUG] num of remaining schedules = 3
+[181002T024107 | SunlightControl | DEBUG] sunSet
+[181002T024107 | SunlightControl | DEBUG] 181002
+[181002T024107 | SunlightControl | DEBUG] 02:41
+[181002T024122 | util.timer | DEBUG] &&&&&&&&&&&&& len(ops) = 2 &&&&&&&&&&&&&&&
+ran RemoteArgs.do: try to eval Remote.send_IR_key('b4', 3)
+echo -#3 SEND_ONCE ledlight b4
+-#3 SEND_ONCE ledlight b4
+ran RemoteArgs.do: try to eval Remote.send_HTTP_trigger('weaklight_off', 1)
+run weaklight_off 1 for https://maker.ifttt.com/trigger/weaklight_off/with/key/********
+try 0: https://maker.ifttt.com/trigger/weaklight_off/with/key/********
+https://maker.ifttt.com/trigger/weaklight_off/with/key/
+[181002T024122 | SunlightControl | DEBUG] num of remaining schedules = 2
+[181002T024122 | SunlightControl | DEBUG] TwLT
+[181002T024122 | SunlightControl | DEBUG] 181002
+[181002T024122 | SunlightControl | DEBUG] 02:41
+[181002T024137 | util.timer | DEBUG] &&&&&&&&&&&&& len(ops) = 1 &&&&&&&&&&&&&&&
+ran RemoteArgs.do: try to eval Remote.send_IR_key('b1', 3)
+echo -#3 SEND_ONCE ledlight b1
+-#3 SEND_ONCE ledlight b1
+[181002T024137 | SunlightControl | DEBUG] num of remaining schedules = 1
+[181002T024137 | SunlightControl | DEBUG] moon
+[181002T024137 | SunlightControl | DEBUG] 181002
+[181002T024137 | SunlightControl | DEBUG] 02:41
+[181002T024152 | util.timer | DEBUG] &&&&&&&&&&&&& len(ops) = 1 &&&&&&&&&&&&&&&
+ran RemoteArgs.do: try to eval Remote.send_IR_key('b0', 3)
+echo -#3 SEND_ONCE ledlight b0
+-#3 SEND_ONCE ledlight b0
+[181002T024152 | SunlightControl | DEBUG] ########### is_usedup() ################
+[181002T024152 | SunlightControl | INFO] Schedules set for day: 2018-10-02
+[181002T024152 | util.timer | INFO] try to join() Process. <Process(schedulings, stopped daemon)>
+[181002T024152 | util.timer | INFO] joined Process.
+[181002T024152 | util.timer | INFO] midnight will fire @ 2018-10-02 02:42:12+0900:
+[181002T024152 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('off', 3))
+[181002T024152 | util.timer | INFO] astronomical_twilight will fire @ 2018-10-02 02:42:27+0900:
+[181002T024152 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('on', 3))
+[181002T024152 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('b0', 3))
+[181002T024152 | util.timer | INFO] nautical_twilight will fire @ 2018-10-02 02:42:42+0900:
+[181002T024152 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('b1', 3))
+[181002T024152 | util.timer | INFO] civil_twilight will fire @ 2018-10-02 02:42:57+0900:
+[181002T024152 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('b2', 3))
+[181002T024152 | util.timer | INFO] sunrise_glow will fire @ 2018-10-02 02:43:12+0900:
+[181002T024152 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('b3', 3))
+[181002T024152 | util.timer | INFO] sunrise will fire @ 2018-10-02 02:43:27+0900:
+[181002T024152 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('white', 3))
+[181002T024152 | util.timer | INFO] - RemoteArgs(name: send_HTTP_trigger, args:('weaklight_on', 1))
+[181002T024152 | util.timer | INFO] solar_noon will fire @ 2018-10-02 02:43:42+0900:
+[181002T024152 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('up', 16))
+[181002T024152 | util.timer | INFO] - RemoteArgs(name: send_HTTP_trigger, args:('noonlight_on', 1))
+[181002T024152 | util.timer | INFO] evening will fire @ 2018-10-02 02:43:57+0900:
+[181002T024152 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('b3', 3))
+[181002T024152 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('down', 16))
+[181002T024152 | util.timer | INFO] - RemoteArgs(name: send_HTTP_trigger, args:('noonlight_off', 1))
+[181002T024152 | util.timer | INFO] sunset will fire @ 2018-10-02 02:44:12+0900:
+[181002T024152 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('b4', 3))
+[181002T024152 | util.timer | INFO] - RemoteArgs(name: send_HTTP_trigger, args:('weaklight_off', 1))
+[181002T024152 | util.timer | INFO] twilight will fire @ 2018-10-02 02:44:27+0900:
+[181002T024152 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('b1', 3))
+[181002T024152 | util.timer | INFO] moon will fire @ 2018-10-02 02:44:42+0900:
+[181002T024152 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('b0', 3))
+[181002T024152 | util.timer | INFO] Process @<Process(schedulings, started daemon)> 31607 has (re)started.
+[181002T024152 | SunlightControl | INFO] Schedules = [Event(time=1538415732.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('midnight', {'shorten_name': 'midNT', 'color': 'black'}, [<util.remote.RemoteArgs object at 0x10bbe6390>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538415747.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('astronomical_twilight', {'shorten_name': 'asTwLT', 'color': 'darkblue'}, [<util.remote.RemoteArgs object at 0x10bbe6a90>, <util.remote.RemoteArgs object at 0x10bbd6710>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538415762.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('nautical_twilight', {'shorten_name': 'naTwLT', 'color': 'violet'}, [<util.remote.RemoteArgs object at 0x10bbd3320>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538415777.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('civil_twilight', {'shorten_name': 'cvTwLT', 'color': 'palevioletred'}, [<util.remote.RemoteArgs object at 0x10bbcee10>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538415792.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('sunrise_glow', {'shorten_name': 'rsGLW', 'color': 'mediumvioletred'}, [<util.remote.RemoteArgs object at 0x10bbc9358>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538415807.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('sunrise', {'shorten_name': 'sunRs', 'color': 'lightgray'}, [<util.remote.RemoteArgs object at 0x10bbc9978>, <util.remote.RemoteArgs object at 0x10bb9b208>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538415822.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('solar_noon', {'shorten_name': 'noon', 'color': 'white'}, [<util.remote.RemoteArgs object at 0x10bbc4748>, <util.remote.RemoteArgs object at 0x10bbc1a20>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538415837.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('evening', {'shorten_name': 'even', 'color': 'goldenrod'}, [<util.remote.RemoteArgs object at 0x10bbc1080>, <util.remote.RemoteArgs object at 0x10bbb9f60>, <util.remote.RemoteArgs object at 0x10bbb96a0>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538415852.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('sunset', {'shorten_name': 'sunSet', 'color': 'orangered'}, [<util.remote.RemoteArgs object at 0x10bbb9128>, <util.remote.RemoteArgs object at 0x10bbb34a8>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538415867.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('twilight', {'shorten_name': 'TwLT', 'color': 'violet'}, [<util.remote.RemoteArgs object at 0x10bbaf240>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538415882.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('moon', {'shorten_name': 'moon', 'color': 'darkblue'}, [<util.remote.RemoteArgs object at 0x10bbab080>], <util.remote.Remote object at 0x10bb94320>), kwargs={})]
+[181002T024152 | SunlightControl | DEBUG] midNT
+[181002T024152 | SunlightControl | DEBUG] 181002
+[181002T024152 | SunlightControl | DEBUG] 02:42
+[181002T024152 | SunlightControl | DEBUG] num of remaining schedules = 11
+[181002T024212 | util.timer | DEBUG] &&&&&&&&&&&&& len(ops) = 1 &&&&&&&&&&&&&&&
+ran RemoteArgs.do: try to eval Remote.send_IR_key('off', 3)
+echo -#3 SEND_ONCE ledlight off
+-#3 SEND_ONCE ledlight off
+[181002T024212 | SunlightControl | DEBUG] num of remaining schedules = 10
+[181002T024212 | SunlightControl | DEBUG] asTwLT
+[181002T024212 | SunlightControl | DEBUG] 181002
+[181002T024212 | SunlightControl | DEBUG] 02:42
+[181002T024227 | util.timer | DEBUG] &&&&&&&&&&&&& len(ops) = 2 &&&&&&&&&&&&&&&
+ran RemoteArgs.do: try to eval Remote.send_IR_key('on', 3)
+echo -#3 SEND_ONCE ledlight on
+-#3 SEND_ONCE ledlight on
+ran RemoteArgs.do: try to eval Remote.send_IR_key('b0', 3)
+echo -#3 SEND_ONCE ledlight b0
+-#3 SEND_ONCE ledlight b0
+[181002T024227 | SunlightControl | DEBUG] num of remaining schedules = 9
+[181002T024227 | SunlightControl | DEBUG] naTwLT
+[181002T024227 | SunlightControl | DEBUG] 181002
+[181002T024227 | SunlightControl | DEBUG] 02:42
+[181002T024242 | util.timer | DEBUG] &&&&&&&&&&&&& len(ops) = 1 &&&&&&&&&&&&&&&
+ran RemoteArgs.do: try to eval Remote.send_IR_key('b1', 3)
+echo -#3 SEND_ONCE ledlight b1
+-#3 SEND_ONCE ledlight b1
+[181002T024242 | SunlightControl | DEBUG] num of remaining schedules = 8
+[181002T024242 | SunlightControl | DEBUG] cvTwLT
+[181002T024242 | SunlightControl | DEBUG] 181002
+[181002T024242 | SunlightControl | DEBUG] 02:42
+[181002T024257 | util.timer | DEBUG] &&&&&&&&&&&&& len(ops) = 1 &&&&&&&&&&&&&&&
+ran RemoteArgs.do: try to eval Remote.send_IR_key('b2', 3)
+echo -#3 SEND_ONCE ledlight b2
+-#3 SEND_ONCE ledlight b2
+[181002T024257 | SunlightControl | DEBUG] num of remaining schedules = 7
+[181002T024257 | SunlightControl | DEBUG] rsGLW
+[181002T024257 | SunlightControl | DEBUG] 181002
+[181002T024257 | SunlightControl | DEBUG] 02:43
+[181002T024312 | util.timer | DEBUG] &&&&&&&&&&&&& len(ops) = 1 &&&&&&&&&&&&&&&
+ran RemoteArgs.do: try to eval Remote.send_IR_key('b3', 3)
+echo -#3 SEND_ONCE ledlight b3
+-#3 SEND_ONCE ledlight b3
+[181002T024312 | SunlightControl | DEBUG] num of remaining schedules = 6
+[181002T024312 | SunlightControl | DEBUG] sunRs
+[181002T024312 | SunlightControl | DEBUG] 181002
+[181002T024312 | SunlightControl | DEBUG] 02:43
+[181002T024327 | util.timer | DEBUG] &&&&&&&&&&&&& len(ops) = 2 &&&&&&&&&&&&&&&
+ran RemoteArgs.do: try to eval Remote.send_IR_key('white', 3)
+echo -#3 SEND_ONCE ledlight white
+-#3 SEND_ONCE ledlight white
+ran RemoteArgs.do: try to eval Remote.send_HTTP_trigger('weaklight_on', 1)
+run weaklight_on 1 for https://maker.ifttt.com/trigger/weaklight_on/with/key/********
+try 0: https://maker.ifttt.com/trigger/weaklight_on/with/key/********
+https://maker.ifttt.com/trigger/weaklight_on/with/key/
+[181002T024327 | SunlightControl | DEBUG] num of remaining schedules = 5
+[181002T024327 | SunlightControl | DEBUG] noon
+[181002T024327 | SunlightControl | DEBUG] 181002
+[181002T024327 | SunlightControl | DEBUG] 02:43
+[181002T024342 | util.timer | DEBUG] &&&&&&&&&&&&& len(ops) = 2 &&&&&&&&&&&&&&&
+ran RemoteArgs.do: try to eval Remote.send_IR_key('up', 16)
+echo -#16 SEND_ONCE ledlight up
+-#16 SEND_ONCE ledlight up
+ran RemoteArgs.do: try to eval Remote.send_HTTP_trigger('noonlight_on', 1)
+run noonlight_on 1 for https://maker.ifttt.com/trigger/noonlight_on/with/key/********
+try 0: https://maker.ifttt.com/trigger/noonlight_on/with/key/********
+https://maker.ifttt.com/trigger/noonlight_on/with/key/
+[181002T024342 | SunlightControl | DEBUG] num of remaining schedules = 4
+[181002T024342 | SunlightControl | DEBUG] even
+[181002T024342 | SunlightControl | DEBUG] 181002
+[181002T024342 | SunlightControl | DEBUG] 02:43
+[181002T024357 | util.timer | DEBUG] &&&&&&&&&&&&& len(ops) = 3 &&&&&&&&&&&&&&&
+ran RemoteArgs.do: try to eval Remote.send_IR_key('b3', 3)
+echo -#3 SEND_ONCE ledlight b3
+-#3 SEND_ONCE ledlight b3
+ran RemoteArgs.do: try to eval Remote.send_IR_key('down', 16)
+echo -#16 SEND_ONCE ledlight down
+-#16 SEND_ONCE ledlight down
+ran RemoteArgs.do: try to eval Remote.send_HTTP_trigger('noonlight_off', 1)
+run noonlight_off 1 for https://maker.ifttt.com/trigger/noonlight_off/with/key/********
+try 0: https://maker.ifttt.com/trigger/noonlight_off/with/key/********
+https://maker.ifttt.com/trigger/noonlight_off/with/key/
+[181002T024357 | SunlightControl | DEBUG] num of remaining schedules = 3
+[181002T024357 | SunlightControl | DEBUG] sunSet
+[181002T024357 | SunlightControl | DEBUG] 181002
+[181002T024357 | SunlightControl | DEBUG] 02:44
+[181002T024412 | util.timer | DEBUG] &&&&&&&&&&&&& len(ops) = 2 &&&&&&&&&&&&&&&
+ran RemoteArgs.do: try to eval Remote.send_IR_key('b4', 3)
+echo -#3 SEND_ONCE ledlight b4
+-#3 SEND_ONCE ledlight b4
+ran RemoteArgs.do: try to eval Remote.send_HTTP_trigger('weaklight_off', 1)
+run weaklight_off 1 for https://maker.ifttt.com/trigger/weaklight_off/with/key/********
+try 0: https://maker.ifttt.com/trigger/weaklight_off/with/key/********
+https://maker.ifttt.com/trigger/weaklight_off/with/key/
+[181002T024412 | SunlightControl | DEBUG] num of remaining schedules = 2
+[181002T024412 | SunlightControl | DEBUG] TwLT
+[181002T024412 | SunlightControl | DEBUG] 181002
+[181002T024412 | SunlightControl | DEBUG] 02:44
+[181002T024427 | util.timer | DEBUG] &&&&&&&&&&&&& len(ops) = 1 &&&&&&&&&&&&&&&
+ran RemoteArgs.do: try to eval Remote.send_IR_key('b1', 3)
+echo -#3 SEND_ONCE ledlight b1
+-#3 SEND_ONCE ledlight b1
+[181002T024427 | SunlightControl | DEBUG] num of remaining schedules = 1
+[181002T024427 | SunlightControl | DEBUG] moon
+[181002T024427 | SunlightControl | DEBUG] 181002
+[181002T024427 | SunlightControl | DEBUG] 02:44
+[181002T024442 | util.timer | DEBUG] &&&&&&&&&&&&& len(ops) = 1 &&&&&&&&&&&&&&&
+ran RemoteArgs.do: try to eval Remote.send_IR_key('b0', 3)
+echo -#3 SEND_ONCE ledlight b0
+-#3 SEND_ONCE ledlight b0
+[181002T024442 | SunlightControl | DEBUG] ########### is_usedup() ################
+[181002T024442 | SunlightControl | INFO] Schedules set for day: 2018-10-02
+[181002T024442 | util.timer | INFO] try to join() Process. <Process(schedulings, stopped daemon)>
+[181002T024442 | util.timer | INFO] joined Process.
+[181002T024442 | util.timer | INFO] midnight will fire @ 2018-10-02 02:45:02+0900:
+[181002T024442 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('off', 3))
+[181002T024442 | util.timer | INFO] astronomical_twilight will fire @ 2018-10-02 02:45:17+0900:
+[181002T024442 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('on', 3))
+[181002T024442 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('b0', 3))
+[181002T024442 | util.timer | INFO] nautical_twilight will fire @ 2018-10-02 02:45:32+0900:
+[181002T024442 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('b1', 3))
+[181002T024442 | util.timer | INFO] civil_twilight will fire @ 2018-10-02 02:45:47+0900:
+[181002T024442 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('b2', 3))
+[181002T024442 | util.timer | INFO] sunrise_glow will fire @ 2018-10-02 02:46:02+0900:
+[181002T024442 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('b3', 3))
+[181002T024442 | util.timer | INFO] sunrise will fire @ 2018-10-02 02:46:17+0900:
+[181002T024442 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('white', 3))
+[181002T024442 | util.timer | INFO] - RemoteArgs(name: send_HTTP_trigger, args:('weaklight_on', 1))
+[181002T024442 | util.timer | INFO] solar_noon will fire @ 2018-10-02 02:46:32+0900:
+[181002T024442 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('up', 16))
+[181002T024442 | util.timer | INFO] - RemoteArgs(name: send_HTTP_trigger, args:('noonlight_on', 1))
+[181002T024442 | util.timer | INFO] evening will fire @ 2018-10-02 02:46:47+0900:
+[181002T024442 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('b3', 3))
+[181002T024442 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('down', 16))
+[181002T024442 | util.timer | INFO] - RemoteArgs(name: send_HTTP_trigger, args:('noonlight_off', 1))
+[181002T024442 | util.timer | INFO] sunset will fire @ 2018-10-02 02:47:02+0900:
+[181002T024442 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('b4', 3))
+[181002T024442 | util.timer | INFO] - RemoteArgs(name: send_HTTP_trigger, args:('weaklight_off', 1))
+[181002T024442 | util.timer | INFO] twilight will fire @ 2018-10-02 02:47:17+0900:
+[181002T024442 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('b1', 3))
+[181002T024442 | util.timer | INFO] moon will fire @ 2018-10-02 02:47:32+0900:
+[181002T024442 | util.timer | INFO] - RemoteArgs(name: send_IR_key, args:('b0', 3))
+[181002T024442 | util.timer | INFO] Process @<Process(schedulings, started daemon)> 31671 has (re)started.
+[181002T024442 | SunlightControl | INFO] Schedules = [Event(time=1538415902.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('midnight', {'shorten_name': 'midNT', 'color': 'black'}, [<util.remote.RemoteArgs object at 0x10bbd6cf8>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538415917.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('astronomical_twilight', {'shorten_name': 'asTwLT', 'color': 'darkblue'}, [<util.remote.RemoteArgs object at 0x10bbda748>, <util.remote.RemoteArgs object at 0x10bc20da0>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538415932.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('nautical_twilight', {'shorten_name': 'naTwLT', 'color': 'violet'}, [<util.remote.RemoteArgs object at 0x10bc20748>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538415947.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('civil_twilight', {'shorten_name': 'cvTwLT', 'color': 'palevioletred'}, [<util.remote.RemoteArgs object at 0x10bc1c128>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538415962.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('sunrise_glow', {'shorten_name': 'rsGLW', 'color': 'mediumvioletred'}, [<util.remote.RemoteArgs object at 0x10bbdef98>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538415977.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('sunrise', {'shorten_name': 'sunRs', 'color': 'lightgray'}, [<util.remote.RemoteArgs object at 0x10bc19cc0>, <util.remote.RemoteArgs object at 0x10bc19320>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538415992.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('solar_noon', {'shorten_name': 'noon', 'color': 'white'}, [<util.remote.RemoteArgs object at 0x10bc162e8>, <util.remote.RemoteArgs object at 0x10bbc8908>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538416007.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('evening', {'shorten_name': 'even', 'color': 'goldenrod'}, [<util.remote.RemoteArgs object at 0x10bbff320>, <util.remote.RemoteArgs object at 0x10bbfc668>, <util.remote.RemoteArgs object at 0x10bbcb860>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538416022.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('sunset', {'shorten_name': 'sunSet', 'color': 'orangered'}, [<util.remote.RemoteArgs object at 0x10bbcbfd0>, <util.remote.RemoteArgs object at 0x10b807e80>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538416037.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('twilight', {'shorten_name': 'TwLT', 'color': 'violet'}, [<util.remote.RemoteArgs object at 0x10bbf0550>], <util.remote.Remote object at 0x10bb94320>), kwargs={}), Event(time=1538416052.0, priority=2, action=<bound method LEDLightDayTimer._do of <util.timer.LEDLightDayTimer object at 0x10b7f8b00>>, argument=('moon', {'shorten_name': 'moon', 'color': 'darkblue'}, [<util.remote.RemoteArgs object at 0x10bbeccc0>], <util.remote.Remote object at 0x10bb94320>), kwargs={})]
+[181002T024442 | SunlightControl | DEBUG] midNT
+[181002T024442 | SunlightControl | DEBUG] 181002
+[181002T024442 | SunlightControl | DEBUG] 02:45
+[181002T024442 | SunlightControl | DEBUG] num of remaining schedules = 11
+^CProcess schedulings:
+Caught KeyboardInterrupt. schedules were cancelled.
+Filename: ./sunlight_control.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+   333   38.398 MiB   38.398 MiB   @profile
+   334                             def main():
+   335                                 """ for memory_profile """
+   336   38.398 MiB    0.000 MiB       try:
+   337   38.938 MiB    0.539 MiB           ins = SunlightControl(LEDLightDayTimer(), 30 * 60)
+   338
+   339   38.949 MiB    0.012 MiB           ins.start()
+   340   39.980 MiB    1.031 MiB           ins.join()
+   341   39.980 MiB    0.000 MiB       except KeyboardInterrupt:
+   342   39.980 MiB    0.000 MiB           ins.kill()
+   343   39.980 MiB    0.000 MiB           print('Caught KeyboardInterrupt. schedules were cancelled.')
+   344   39.984 MiB    0.004 MiB           exit(0)
+
+
+Traceback (most recent call last):
+  File "/usr/local/Cellar/python/3.7.0/Frameworks/Python.framework/Versions/3.7/lib/python3.7/multiprocessing/process.py", line 297, in _bootstrap
+    self.run()
+  File "/usr/local/Cellar/python/3.7.0/Frameworks/Python.framework/Versions/3.7/lib/python3.7/multiprocessing/process.py", line 99, in run
+    self._target(*self._args, **self._kwargs)
+  File "/usr/local/Cellar/python/3.7.0/Frameworks/Python.framework/Versions/3.7/lib/python3.7/sched.py", line 149, in run
+    delayfunc(time - now)
+KeyboardInterrupt

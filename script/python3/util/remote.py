@@ -3,6 +3,7 @@
 
 from itertools import product
 import subprocess as sp
+import requests, time
 
 from util import module_logger, is_debug
 
@@ -25,13 +26,22 @@ class Remote(object):
         sp.call(cmd, shell=True)
 
     def send_HTTP_trigger(self, endpoint, repeat=1):
+        """
+        IFTTT response
+        success: Congratulations! You've fired the {event name} event
+        failure: { "errors": [{"message": "You sent an invalid key."}] }
+        """
         ifttt_path = lambda key: self._ifttt_path.format(endpoint, key)
         # WANTFIX: Why it prints many same lines when logger has been called from sched.run??
         print('run {} {} for {}'.format(endpoint, repeat, ifttt_path('********')))
         for i in range(repeat):
-            print('try %d: %s'%(i, ifttt_path('********')))
-            # noneed to use pycurl
-            sp.call('%s %s'%(self.http_cmd, ifttt_path(self._ifttt_key)), shell=True)
+            res, l = "", 0
+            while l < 3 and res.find('Congratulations! You\'ve fired the %s event'%endpoint):
+                print('try %d-%d: %s'%(i, l, ifttt_path('********')))
+                # noneed to use pycurl or requests, thread unsafe on macOS 10.14.
+                res = sp.check_output('{} {}'.format(self.http_cmd, ifttt_path(self._ifttt_key)), shell=True).decode('utf-8')
+                print(res)
+                l += 1
 
     @property
     def name(self): return self._name
