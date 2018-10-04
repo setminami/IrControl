@@ -75,8 +75,7 @@ class SunlightControl(Thread):
         # restrict update lircd for runnning
         irsend, httpcmd = 'echo' if is_debug() \
             else sp.check_output(['which', self.PARAMS['IRSEND_CMD']]).decode('utf-8')[:-1], \
-            'echo' if is_debug() \
-                else sp.check_output(['which', 'curl']).decode('utf-8')[:-1]
+            '{} -sl'.format(sp.check_output(['which', 'curl']).decode('utf-8')[:-1])
         ifttt = self.PARAMS['IFTTT']
         for x in self.PARAMS['KEYCODE']:
             remote = Remote(irsend, httpcmd, ifttt['path'], ifttt['key'])
@@ -330,7 +329,7 @@ class SunlightControl(Thread):
             help='config file that wrote by yaml describe params, see default=%s'%SETTING)
         return argParser.parse_args()
 
-@profile
+# @profile
 def main():
     """ for memory_profile """
     try:
