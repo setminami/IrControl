@@ -66,7 +66,7 @@ class SunlightControl(Thread):
 
         with open(self.config_path, "r") as f:
           params = yaml.load(f)
-          self.PARAMS = expand_env(params, DEBUG)
+          self.PARAMS = expand_env(params, True)
 
         self._device = get_device(['-d', 'ssd1331', '-i', 'spi', '--width', '96', '--height', '64'])
         self._per_sec = per_sec # to check every _perse
@@ -146,7 +146,7 @@ class SunlightControl(Thread):
         """
         with open(self.config_path, "r") as f:
           params = yaml.load(f)
-          self.PARAMS = expand_env(params, DEBUG)
+          self.PARAMS = expand_env(params, True)
 
         self._setup_wether_info(day)
         return self._scheduling()
