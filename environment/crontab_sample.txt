@@ -20,4 +20,4 @@
 # For more information see the manual pages of crontab(5) and cron(8)
 #
 # reboots
-@reboot /home/pi/natureSim/SunlightControl/script/python3/sunlight_control.py >> /home/pi/natureSim/log/SunLight.log
+@reboot /home/pi/natureSim/SunlightControl/script/nature_simulate.sh
