@@ -26,8 +26,7 @@ Codename:	stretch
 
 #### circuit diagram
 Maybe, easy to configure, after H/W settings.
-[![SunLight by setminami 951bfa33c4296aea - Upverter](https://upverter.com/setminami/951bfa33c4296aea/SunLight/embed_img/15383074780000/)](https://upverter.com/setminami/951bfa33c4296aea/SunLight/#/)
-
+[![natural light simulator by setminami 951bfa33c4296aea - Upverter](https://upverter.com/setminami/951bfa33c4296aea/natural-light-simulator/embed_img/15388566660000/)](https://upverter.com/setminami/951bfa33c4296aea/natural-light-simulator/#/)
 - refs
   - [GL538](http://akizukidenshi.com/download/ds/sharp/gl537_gl538.pdf)
   - [hx1838](http://www.datasheetcafe.com/HX1838-pdf-20841/)
