@@ -19,7 +19,8 @@ def expand_env(params, verbose=False):
             env_key = val[2:-1]
             if env_key in list(environ.keys()):
                 params[key] = environ[env_key]
-                _print('Overwrite env value {} = {}'.format(val, params[key]), verbose)
+                _print('Overwrite env value {} = {}'.format(val, '***'), verbose)
+                _print('If not fire IFTTT triggers, Plase re-check your own IFTTT key settings.')
             else:
                 _print('## {} not exported for {}. Please check your yaml file and env. ##'.format(env_key, key), verbose)
                 _print('Env {} vs keys = {}'.format(env_key, list(environ.keys())), verbose)
