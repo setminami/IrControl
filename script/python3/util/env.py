@@ -17,11 +17,14 @@ def expand_env(params, verbose=False):
                 and val.endswith('}')):
             _print('LEAF', verbose)
             env_key = val[2:-1]
-            if env_key in environ.keys():
-                params[key] = environ[val[2:-1]]
-                _print('Overwrite env value {} = {}'.format(val, params[key]), verbose)
+            if env_key in list(environ.keys()):
+                params[key] = environ[env_key]
+                _print('Overwrite env value {} = {}'.format(val, '***'), verbose)
+                _print('If not fire IFTTT triggers, Plase re-check your own IFTTT key settings.')
             else:
-                _print('## ${} not exported for {}. Please check your yaml file. ##'.format(val[2:-1], key), verbose)
+                _print('## {} not exported for {}. Please check your yaml file and env. ##'.format(env_key, key), verbose)
+                _print('Env {} vs keys = {}'.format(env_key, list(environ.keys())), verbose)
+                exit(1)
         else:
             _print('?? %s TYPE is %s'%(val, type(val)), verbose)
     return params
