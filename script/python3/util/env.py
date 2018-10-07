@@ -2,6 +2,10 @@
 # this made for python3
 
 from os import environ
+from enum import Enum
+from PIL import ImageFont
+
+from util import is_debug
 
 def expand_env(params, verbose=False):
     """ dotenv like function, but not dotenv """
@@ -31,3 +35,28 @@ def expand_env(params, verbose=False):
 
 def _print(msg, v=False):
     if v: print(msg)
+
+class DrawType(Enum):
+    CLOCK = 'CLOCK'
+
+    def preprocessor(self):
+        # TODO: generalize each draw type args
+        # write each comment as args tuple and copy'n pasetes for tuple declarations in draw_display
+        if self == DrawType.CLOCK: # clock_frame_color express (active, inactive)
+            font_path = '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf' \
+                if not is_debug() else '/System/Library/Fonts/Apple Braille.ttf'
+            font_small = ImageFont.truetype(font_path, 8, encoding="unic")
+            font_large = ImageFont.truetype(font_path, 12, encoding="unic")
+            # an_lineheight, margin, height_max, cx, base_angle, R, sch_plot_R, R_ratio, \
+            #   label_text, clock_frame_color, needle_color, sec_needle_color, text_color, font1, font2
+            return (8, 4, 64, 30, 270, 30, 3, 0.667, \
+                    'Next:', ('#F7FE2E', '#424242'), 'white', '#FE2E2E', 'white', font_small, font_large)
+        else:
+            return ()
+
+class TemperatureUnits(Enum):
+    C = 'Celsius'
+    F = 'Fahrenheit'
+
+    def as_mark(self, enc='utf-8'):
+        return (u'°' + self.value[0]).encode(enc)

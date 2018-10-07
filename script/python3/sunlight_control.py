@@ -3,13 +3,10 @@
 # this made for python3
 
 import os, sys, argparse, yaml, math, time, subprocess as sp
-# from multiprocessing import Process, Event
 from threading import Thread, Event
-from multiprocessing import Pool
 from datetime import datetime, timedelta
-from enum import Enum
 
-from util.env import expand_env
+from util.env import expand_env, TemperatureUnits, DrawType
 from util.timer import LEDLightDayTimer
 from util.remote import Remote
 from util.weather_info import WeatherInfo
@@ -23,7 +20,6 @@ else:
     from luma.core.render import canvas
     from display.demo_opts import get_device
 
-from PIL import ImageFont
 from time import sleep
 
 __VERSION__ = "1.0"
@@ -31,29 +27,12 @@ __VERSION__ = "1.0"
 _BASE = os.path.dirname(os.path.abspath(__file__))
 # for avoid virtualenv
 SETTING = os.path.normpath(os.path.join(_BASE, '../../settings/ledlight.yml')) \
-                if not is_debug() else os.path.expanduser('~/Github/SunlightControl/settings/ledlight.yml')
+            if not is_debug() else os.path.expanduser('~/Github/SunlightControl/settings/ledlight.yml')
 
 DEBUG = False
 
-class DrawType(Enum):
-    CLOCK = 1
-
-    def preprocessor(self):
-        # TODO: generalize each draw type args
-        # write each comment as args tuple and copy'n pasetes for tuple declarations in draw_display
-        if self == DrawType.CLOCK: # clock_frame_color express (active, inactive)
-            font_path = '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf' \
-                if not is_debug() else '/System/Library/Fonts/Apple Braille.ttf'
-            font_small = ImageFont.truetype(font_path, 8, encoding="unic")
-            font_large = ImageFont.truetype(font_path, 12, encoding="unic")
-            # an_lineheight, margin, height_max, cx, base_angle, R, sch_plot_R, R_ratio, \
-            #   label_text, clock_frame_color, needle_color, sec_needle_color, text_color, font1, font2
-            return (8, 4, 64, 30, 270, 30, 3, 0.667, \
-                    'Next:', ('#F7FE2E', '#424242'), 'white', '#FE2E2E', 'white', font_small, font_large)
-        else:
-            return ()
-
 _SLEEP = 0.5
+
 class SunlightControl(Thread):
 
     def __init__(self, timer, per_sec, setting=None):
@@ -82,10 +61,19 @@ class SunlightControl(Thread):
             remote.setup_ir_keycodes(x)
             self.remotes[x['name']] = remote
         timer.remote = self.remotes['ledlight']
+        self.live_update_params()
         self._timer = timer
         self.kill_received = False
         self.logger = module_logger(__class__.__name__)
         super().__init__()
+
+    def live_update_params(self):
+        self.temps = self.PARAMS['TEMPERATURE_MANAGER']['too_cold']['temp'], \
+                     self.PARAMS['TEMPERATURE_MANAGER']['too_hot']['temp']
+        self.temp_colors = self.PARAMS['TEMPERATURE_MANAGER']['default_color'], \
+                                self.PARAMS['TEMPERATURE_MANAGER']['too_cold']['color'], \
+                                self.PARAMS['TEMPERATURE_MANAGER']['too_hot']['color']
+        self.temp_unit = TemperatureUnits(self.PARAMS['TEMPERATURE_MANAGER']['unit'])
 
     @property
     def timer(self):
@@ -133,8 +121,8 @@ class SunlightControl(Thread):
         # TODO: check memory usage
         TIMESHIFTS = 'TIMESHIFTS' if not is_debug() else 'TIMESHIFTS_for_debg'
         self._timer.weather = WeatherInfo(day, self.PARAMS['SUNLIGHT_STATUS_API'],
-                                            self.PARAMS[TIMESHIFTS],
-                                            self.PARAMS['TIMEZONE'])
+                                                self.PARAMS[TIMESHIFTS],
+                                                self.PARAMS['TIMEZONE'])
 
     def _scheduling(self):
         return self._timer.do_schedule()
@@ -148,6 +136,7 @@ class SunlightControl(Thread):
           params = yaml.load(f)
           self.PARAMS = expand_env(params, True)
 
+        self.live_update_params()
         self._setup_wether_info(day)
         return self._scheduling()
 
@@ -158,7 +147,8 @@ class SunlightControl(Thread):
 
         self.active_schedules = None
         today_last_time = "Unknown"
-        tank_temp = None
+        tank_temp = None, None
+        onewire_sn = self.PARAMS['TEMPERATURE_MANAGER']['onewire_sn']
 
         args = draw_type.preprocessor()
 
@@ -188,17 +178,17 @@ class SunlightControl(Thread):
                     self.logger.debug('num of remaining schedules = {}'.format(len(self.active_schedules)))
                     sch_len = len(self.active_schedules)
 
-            crc = tank_temp[1] if tank_temp is not None else None
-            with ThermoInfo('28-0417004c49ff', crc) as thermo: _tank_temp = thermo.check()
-            tank_temp = _tank_temp if _tank_temp is not None else tank_temp
 
-            today_time = now.strftime('%H:%M:%S') # draw per seconds
+            today_time = now.strftime('%H:%M:%S')  # draw per seconds
             if today_time != today_last_time:
                 today_last_time = today_time
+                with ThermoInfo(onewire_sn, tank_temp) as thermo:
+                    tank_temp = thermo.check()
                 literal_outputs = self.draw_display(self.device,
                                                     draw_type,
                                                     args,
-                                                    u'%2.1fC'%tank_temp[0], is_debug())
+                                                    self.format_watertemp(tank_temp),
+                                                    is_debug())
                 if is_debug() and (literal_outputs != (display_name, dateform, timeform)):
                     display_name, dateform, timeform = literal_outputs
                     self.logger.debug(display_name)
@@ -214,10 +204,9 @@ class SunlightControl(Thread):
         with canvas(device) as draw:
             if draw_type == DrawType.CLOCK:
                 an_lineheight, margin, height_max, cx, base_angle, \
-                R, sch_plot_R, R_ratio, label_text, \
-                clock_frame_color, needle_color, sec_needle_color, text_color, \
-                font1, font2 \
-                    = args
+                    R, sch_plot_R, R_ratio, label_text, \
+                    clock_frame_color, needle_color, sec_needle_color, text_color, \
+                    font1, font2 = draw_type.preprocessor()
                 now = datetime.now(self.timer.timezone)
                 today_date = now.strftime("%y%m%d")
                 today_time = now.strftime('%H:%M:%S')
@@ -251,16 +240,16 @@ class SunlightControl(Thread):
 
                 # SPEC: e.g., If now AM -> AM frame set active, PM frame inactive
                 # PM circle (x - cx)^2 + (y - cy)^2 = R^2
-                draw.ellipse(self._circular(R, origin), outline=ampm_color(now, 'PM'))
+                draw.ellipse(_circular(R, origin), outline=ampm_color(now, 'PM'))
 
                 # AM circle, This circle must be concentric with PM circle
-                draw.ellipse(self._circular(R * R_ratio, origin), outline=ampm_color(now, 'AM'))
+                draw.ellipse(_circular(R * R_ratio, origin), outline=ampm_color(now, 'AM'))
 
                 draw.line((cx, cy, cx + hrs[0], cy + hrs[1]), fill=needle_color)
                 draw.line((cx, cy, cx + mins[0], cy + mins[1]), fill=needle_color)
                 draw.line((cx, cy, cx + secs[0], cy + secs[1]), fill=sec_needle_color)
                 # clock origin
-                draw.ellipse(self._circular(2, origin), fill=needle_color, outline=needle_color)
+                draw.ellipse(_circular(2, origin), fill=needle_color, outline=needle_color)
 
                 # literal infos
                 # print Most Recent Schedule's name & time
@@ -272,45 +261,29 @@ class SunlightControl(Thread):
                 dateform, timeform = time.strftime('%y%m%d'), time.strftime('%H:%M')
                 draw.text((1.8 * (cx + margin), cy - an_lineheight), dateform, fill=text_color, font=font1)
                 draw.text((1.9 * (cx + margin), cy), timeform, fill=text_color, font=font1)
-                draw.text((1.75 * (cx + margin), cy + an_lineheight * 2), temperature, fill=clock_frame_color[1], font=font2)
+                draw.text((1.6 * (cx + margin), cy + an_lineheight * 2), temperature[0], fill=temperature[1], font=font2)
 
                 # plot schedules on ellipse
-                self._plot_schedule(draw, origin, R, sch_plot_R, R_ratio, schs)
+                _plot_schedule(draw, origin, R, sch_plot_R, R_ratio, schs)
                 return display_name, dateform, timeform
 
-    def _circular(self, r, origin):
-        return (tuple([x - r for x in origin]), tuple([x + r for x in origin]))
+    def format_watertemp(self, temp: float, after_decimal_point: int=1):
+        """ return (current water temperature str, color) """
+        form = '%2.{}f{}'.format(after_decimal_point, self.temp_unit.as_mark())
+        return form % temp, self._color_judge(temp)
 
-    def _plot_schedule(self, draw, origin, R, plot_R, R_ratio, schedules):
-        """ plot schedules on ellipse """
-        DISPLAY = 1
-        for i, s in enumerate(schedules):
-            name, time = s
-            color = name[DISPLAY]['color']
-            r = lambda r, x: r * R_ratio if x else r
-            draw.ellipse(self._plot_on_circle(origin, r(R, time.hour < 12), r(plot_R, i!=0), time), fill=color)
-
-    def _plot_on_circle(self, origin, R, plot_R, time):
-        """
-        12h = 720min => 1min as degree = (360/720) = 0.5 = 1/2
-                             as radian = (2pi/720) = 2.777778pi * 10^-3
-        0:00 -> origin: (Ox, Oy + R)
-        0:05 -> origin: (Ox + Rsin(deg:0.5 * 5), Oy + Rcos(deg:0.5 * 5))
-        ∴
-        N:M -> origin: passed_min=(N * 60 + M), (Ox + Rsin(deg:passed_min/2), Oy + Rcos(deg:passed_min/2))
-        (however, origin is left-down )
-        """
-        Ox, Oy = origin
-        h12 = time.hour if time.hour < 12 else (time.hour - 12)
-        # as radian
-        # passed_min = (h12 * 60 + time.minute) * 0.002777778 * math.pi
-        # degree to radian
-        passed_min = math.radians((h12 * 60 + time.minute) / 2)
-        # here, axis origin is left-up, -> Oy - Rcos...
-        return self._circular(plot_R, (Ox + math.sin(passed_min) * R, Oy - math.cos(passed_min) * R))
+    def _color_judge(self, temp):
+        under, upper = self.temps
+        safe_color, hot_color, cold_color = self.temp_colors
+        if temp < under:
+            return cold_color
+        elif temp > upper:
+            return hot_color
+        else:
+            return safe_color
 
     def run(self):
-        self.core_process(DrawType.CLOCK)
+        self.core_process(DrawType(self.PARAMS['DISPLAY']['gui_type']))
 
     def kill(self):
         self.kill_received = True
@@ -328,6 +301,38 @@ class SunlightControl(Thread):
             nargs='?', type=str, default=SETTING,
             help='config file that wrote by yaml describe params, see default=%s'%SETTING)
         return argParser.parse_args()
+
+# drawer utilities calculator funcs
+def _circular(r, origin):
+    return tuple([x - r for x in origin]), tuple([x + r for x in origin])
+
+def _plot_schedule(draw, origin, R, plot_R, R_ratio, schedules):
+    """ plot schedules on ellipse """
+    DISPLAY = 1
+    for i, s in enumerate(schedules):
+        name, time = s
+        color = name[DISPLAY]['color']
+        r = lambda r, x: r * R_ratio if x else r
+        draw.ellipse(_plot_on_circle(origin, r(R, time.hour < 12), r(plot_R, i!=0), time), fill=color)
+
+def _plot_on_circle(origin, R, plot_R, time):
+    """
+    12h = 720min => 1min as degree = (360/720) = 0.5 = 1/2
+                         as radian = (2pi/720) = 2.777778pi * 10^-3
+    0:00 -> origin: (Ox, Oy + R)
+    0:05 -> origin: (Ox + Rsin(deg:0.5 * 5), Oy + Rcos(deg:0.5 * 5))
+    ∴
+    N:M -> origin: passed_min=(N * 60 + M), (Ox + Rsin(deg:passed_min/2), Oy + Rcos(deg:passed_min/2))
+    (however, origin is left-down )
+    """
+    Ox, Oy = origin
+    h12 = time.hour if time.hour < 12 else (time.hour - 12)
+    # as radian
+    # passed_min = (h12 * 60 + time.minute) * 0.002777778 * math.pi
+    # degree to radian
+    passed_min = math.radians((h12 * 60 + time.minute) / 2)
+    # here, axis origin is left-up, -> Oy - Rcos...
+    return _circular(plot_R, (Ox + math.sin(passed_min) * R, Oy - math.cos(passed_min) * R))
 
 # @profile
 def main():
