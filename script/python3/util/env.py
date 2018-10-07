@@ -55,8 +55,23 @@ class DrawType(Enum):
             return ()
 
 class TemperatureUnits(Enum):
+    """
+    DS18B20 outputs as Celsius value x 10^3
+    Comversion: 1.8C + 32 = F
+    """
     C = 'Celsius'
     F = 'Fahrenheit'
 
-    def as_mark(self, enc='utf-8'):
-        return (u'°' + self.value[0]).encode(enc)
+    def value_with_mark(self, value, adp=1, enc='utf-8'):
+        """
+        adp means 'after decimal point'
+        return value as appropriate unit, with mark
+        """
+        form = '{:2.' + str(adp) + 'f}' + ('°' + self.value[0])
+        return form.format(self._convert(value))
+
+    def _convert(self, value):
+        if self == C:
+            return float(value)
+        elif self == F:
+            return float(value) * 1.80 + 32.00

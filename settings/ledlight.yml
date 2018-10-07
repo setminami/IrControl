@@ -74,8 +74,6 @@ TEMPERATURE_MANAGER:
         - command: subheater_on
           remote: IFTTT
           repeat: 1
-  trigger_temp: 0.5
-
 
 LINEAR: False # (no implementation) If True, time settings are auto calculated linearly between TIMESHIFTS.
 # ref. https://api-sunrise-sunset.org/ , each names of operation must be matched with WeatherInfo.properties (e.g., sunrise, sunset)
