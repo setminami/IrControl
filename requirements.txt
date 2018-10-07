@@ -1,6 +1,7 @@
 pytz
 python-dateutil
 pyyaml
+Pillow
 
 # Profilers for PyCharm
 memory_profiler

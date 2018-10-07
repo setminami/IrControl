@@ -10,10 +10,10 @@ class ThermoInfo(object):
     """
     device_path = '/sys/bus/w1/devices/{}/w1_slave'
 
-    def __init__(self, rom_code, crc):
+    def __init__(self, rom_code, prev):
         self._devfile = self.device_path.format(rom_code) \
                             if not is_debug() else '../../environment/w1_demo'
-        self._crc = crc
+        self._prev_temp, self._prev_crc = prev
         self.logger = module_logger(__class__.__name__)
 
     def __enter__(self):
@@ -27,11 +27,6 @@ class ThermoInfo(object):
     def device(self):
         assert hasattr(self, '_devfile')
         return self._devfile
-
-    @property
-    def temperature(self):
-        assert hasattr(self, '_temp')
-        return self._temp
 
     def open(self):
         try:
@@ -56,13 +51,11 @@ class ThermoInfo(object):
         caught different crc, read temperature, and return (t/1000 as float, crc).
         """
         crc = self.crc(self._fd.readline())
-        if crc == self._crc:
-            return None
+        if crc == self._prev_crc:
+            return self._prev_temp, crc
         else:
             # update is detected
-            self._temp = self.temp(self._fd.readline())
-            return self.temperature, crc
-        pass
+            return self.temp(self._fd.readline()), crc
 
     def crc(self, text):
         match = re.match(r".*:\scrc=(..)\sYES", text)
