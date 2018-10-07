@@ -187,7 +187,7 @@ class SunlightControl(Thread):
                 literal_outputs = self.draw_display(self.device,
                                                     draw_type,
                                                     args,
-                                                    self.format_watertemp(tank_temp),
+                                                    self.format_watertemp(tank_temp[0]),
                                                     is_debug())
                 if is_debug() and (literal_outputs != (display_name, dateform, timeform)):
                     display_name, dateform, timeform = literal_outputs
@@ -269,8 +269,7 @@ class SunlightControl(Thread):
 
     def format_watertemp(self, temp: float, after_decimal_point: int=1):
         """ return (current water temperature str, color) """
-        form = '%2.{}f{}'.format(after_decimal_point, self.temp_unit.as_mark())
-        return form % temp, self._color_judge(temp)
+        return self.temp_unit.value_with_mark(temp), self._color_judge(temp)
 
     def _color_judge(self, temp):
         under, upper = self.temps
