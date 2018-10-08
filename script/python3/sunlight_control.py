@@ -49,7 +49,7 @@ class SunlightControl(Thread):
         # restrict update lircd for runnning
         irsend, httpcmd = 'echo' if is_debug() \
             else sp.check_output(['which', self.PARAMS['IRSEND_CMD']]).decode('utf-8')[:-1], \
-            '{} -sl'.format(sp.check_output(['which', 'curl']).decode('utf-8')[:-1])
+            f'{sp.check_output(['which', 'curl']).decode('utf-8')[:-1]} -sl'
         ifttt = self.PARAMS['IFTTT']
         for x in self.PARAMS['KEYCODE']:
             remote = Remote(irsend, httpcmd, ifttt['path'], ifttt['key'])
@@ -153,7 +153,7 @@ class SunlightControl(Thread):
 
         args = draw_type.preprocessor()
 
-        self.logger.debug('check {}'.format(self))
+        self.logger.debug(f'check {self}')
         # Debug
         display_name, dateform, timeform, sch_len = "", "", "", 0
 
@@ -165,7 +165,7 @@ class SunlightControl(Thread):
                 self.logger.debug('########### is_usedup() ################')
                 day = now
                 while len(self.active_schedules) == 0:
-                    self.logger.info('Schedules set for day: %s'%day.strftime('%Y-%m-%d'))
+                    self.logger.info(f'Schedules set for day: {day.strftime('%Y-%m-%d')}')
                     self.active_schedules = self.update_settings(day)
                     if len(self.active_schedules) > 0:
                         break
@@ -173,10 +173,10 @@ class SunlightControl(Thread):
                         # search active day to fetch astronomy data
                         day += timedelta(days=1)
                         continue
-                self.logger.info('Schedules = {}'.format(self.active_schedules))
+                self.logger.info(f'Schedules = {self.active_schedules}')
             else:
                 if sch_len != len(self.active_schedules):
-                    self.logger.debug('num of remaining schedules = {}'.format(len(self.active_schedules)))
+                    self.logger.debug(f'num of remaining schedules = {len(self.active_schedules)}')
                     sch_len = len(self.active_schedules)
 
 
@@ -312,7 +312,7 @@ class SunlightControl(Thread):
             version='%s'%__VERSION__)
         argParser.add_argument('-c', '--configure',
             nargs='?', type=str, default=SETTING,
-            help='config file that wrote by yaml describe params, see default=%s'%SETTING)
+            help=f'config file that wrote by yaml describe params, see default={SETTING}')
         return argParser.parse_args()
 
 # drawer utilities calculator funcs

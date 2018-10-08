@@ -33,7 +33,7 @@ class ThermoInfo(object):
         try:
             self._fd = open(self.device, 'r')
         except FileNotFoundError as e:
-            self.logger.critical('{} not setuped?'.format(self.device))
+            self.logger.critical(f'{self.device} not setuped?')
 
     def close(self):
         try:
