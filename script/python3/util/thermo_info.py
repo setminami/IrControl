@@ -3,6 +3,7 @@
 
 from . import module_logger, is_debug
 from .env import ONEW_DEVICE_PATH
+from enum import Enum
 import re
 
 class ThermoInfo(object):
@@ -33,7 +34,7 @@ class ThermoInfo(object):
         try:
             self._fd = open(self.device, 'r')
         except FileNotFoundError as e:
-            self.logger.critical('{} not setuped?'.format(self.device))
+            self.logger.critical(f'{self.device} not setuped?')
 
     def close(self):
         try:
@@ -73,3 +74,13 @@ class ThermoInfo(object):
         else:
             self.logger.error('1-wire setup not be correctly.')
             exit(1)
+
+class TempState(Enum):
+    safe = 'safe'
+    too_hot = 'too_hot'
+    too_cold = 'too_cold'
+
+    def match(self, val: str) -> bool:
+        value = TempState(val)
+        assert isinstance(value, TempState)
+        return self == value

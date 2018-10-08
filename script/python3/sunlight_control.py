@@ -10,7 +10,7 @@ from util.env import expand_env, SETTING, TemperatureUnits, DrawType
 from util.timer import LEDLightDayTimer
 from util.remote import Remote
 from util.weather_info import WeatherInfo
-from util.thermo_info import ThermoInfo
+from util.thermo_info import ThermoInfo, TempState
 from util import module_logger, is_debug
 
 if is_debug():
@@ -94,14 +94,33 @@ class SunlightControl(Thread):
     # sorted by time
     @property
     def active_schedules(self):
-        if hasattr(self, '_active_schedules') and \
-            self._active_schedules is not None:
+        if hasattr(self, '_active_schedules') and self._active_schedules is not None:
             return sorted([x for x in self._active_schedules if x.time > datetime.now().timestamp()], key = lambda x: x.time)
         else:
             return []
     @active_schedules.setter
     def active_schedules(self, val):
         self._active_schedules = val
+
+    @property
+    def temp_state(self):
+        assert hasattr(self, '_temp_state')
+        assert isinstance(self._temp_state, TempState)
+        return self._temp_state
+
+    @temp_state.setter
+    def temp_state(self, val: TempState):
+        if val != self._temp_state:
+            if val is TempState.too_hot: operations = self.toohot_operations
+            elif val is TempState.too_cold: operations = self.toocold_operations
+            else: operations = self.safetemp_operations
+            self._simple_trigger(self.timer.remote, operations)
+            self._temp_state = val
+
+    def _simple_trigger(self, ins, operations):
+        acts = [a for a in [act for act in [acts for acts in operations]]]
+        [ins.send_HTTP_trigger(c, r) for c, r in [(a['command'], a['repeat']) for a in acts \
+                                                                        if a['remote'] is 'IFTTT']]
 
     def is_usedup(self):
         return len(self.active_schedules) == 0
@@ -111,11 +130,6 @@ class SunlightControl(Thread):
     def device(self):
         assert hasattr(self, '_device')
         return self._device
-
-    def posn(self, angle, arm_length):
-        dx = int(math.cos(math.radians(angle)) * arm_length)
-        dy = int(math.sin(math.radians(angle)) * arm_length)
-        return (dx, dy)
 
     # operate transferred instance
     def _setup_wether_info(self, day):
@@ -151,9 +165,7 @@ class SunlightControl(Thread):
         tank_temp = None, None
         onewire_sn = self.PARAMS['TEMPERATURE_MANAGER']['onewire_sn']
 
-        args = draw_type.preprocessor()
-
-        self.logger.debug('check {}'.format(self))
+        self.logger.debug(f'check {self}')
         # Debug
         display_name, dateform, timeform, sch_len = "", "", "", 0
 
@@ -165,7 +177,7 @@ class SunlightControl(Thread):
                 self.logger.debug('########### is_usedup() ################')
                 day = now
                 while len(self.active_schedules) == 0:
-                    self.logger.info('Schedules set for day: %s'%day.strftime('%Y-%m-%d'))
+                    self.logger.info('Schedules set for day: {}'.format(day.strftime('%Y-%m-%d')))
                     self.active_schedules = self.update_settings(day)
                     if len(self.active_schedules) > 0:
                         break
@@ -173,12 +185,11 @@ class SunlightControl(Thread):
                         # search active day to fetch astronomy data
                         day += timedelta(days=1)
                         continue
-                self.logger.info('Schedules = {}'.format(self.active_schedules))
+                self.logger.info(f'Schedules = {self.active_schedules}')
             else:
                 if sch_len != len(self.active_schedules):
-                    self.logger.debug('num of remaining schedules = {}'.format(len(self.active_schedules)))
+                    self.logger.debug(f'num of remaining schedules = {len(self.active_schedules)}')
                     sch_len = len(self.active_schedules)
-
 
             today_time = now.strftime('%H:%M:%S')  # draw per seconds
             if today_time != today_last_time:
@@ -187,9 +198,8 @@ class SunlightControl(Thread):
                     tank_temp = thermo.check()
                 literal_outputs = self.draw_display(self.device,
                                                     draw_type,
-                                                    args,
-                                                    self.format_watertemp(tank_temp[0]),
-                                                    is_debug())
+                                                    self.format_watertemp(tank_temp[0]))
+
                 if is_debug() and (literal_outputs != (display_name, dateform, timeform)):
                     display_name, dateform, timeform = literal_outputs
                     self.logger.debug(display_name)
@@ -201,7 +211,8 @@ class SunlightControl(Thread):
                 [print(s) for s in stats]
             sleep(_SLEEP)
 
-    def draw_display(self, device, draw_type, args, temperature, is_debug):
+    def draw_display(self, device, draw_type, temperature):
+        temp, temp_color = temperature
         with canvas(device) as draw:
             if draw_type == DrawType.CLOCK:
                 an_lineheight, margin, height_max, cx, base_angle, \
@@ -209,8 +220,6 @@ class SunlightControl(Thread):
                     clock_frame_color, needle_color, sec_needle_color, text_color, \
                     font1, font2 = draw_type.preprocessor()
                 now = datetime.now(self.timer.timezone)
-                today_date = now.strftime("%y%m%d")
-                today_time = now.strftime('%H:%M:%S')
                 if (self.active_schedules is not None) and \
                         (len(self.active_schedules) > 0):
                     # SunlightControl.active_schedules is ready
@@ -221,21 +230,18 @@ class SunlightControl(Thread):
                 name, time = schs[0]
                 cy = min(device.height, height_max) / 2
 
-                left = cx - cy
-                right = cx + cy
-
                 hrs_angle = base_angle + (30 * (now.hour + (now.minute / 60.0)))
-                hrs = self.posn(hrs_angle, cy - margin - 7)
+                hrs = posn(hrs_angle, cy - margin - 7)
 
                 min_angle = base_angle + (6 * now.minute)
-                mins = self.posn(min_angle, cy - margin - 2)
+                mins = posn(min_angle, cy - margin - 2)
 
                 sec_angle = base_angle + (6 * now.second)
-                secs = self.posn(sec_angle, cy - margin - 2)
-                ampm_color = lambda time, ampm: clock_frame_color[0] \
-                        if time.strftime('%p') == ampm else clock_frame_color[1]
-                # dimension ssd1331 96 x 64
-                # to see drawer funcs signeture, see. https://pillow.readthedocs.io/en/latest/reference/ImageDraw.html
+                secs = posn(sec_angle, cy - margin - 2)
+                ampm_color = lambda t, ampm: clock_frame_color[0] \
+                        if t.strftime('%p') == ampm else clock_frame_color[1]
+                # dimension ssd1331 is 96 x 64
+                # to see drawer funcs signature, see. https://pillow.readthedocs.io/en/latest/reference/ImageDraw.html
                 # because of luma.core.canvas implementation. (see also)
                 origin = (cx, cy)
 
@@ -262,7 +268,7 @@ class SunlightControl(Thread):
                 dateform, timeform = time.strftime('%y%m%d'), time.strftime('%H:%M')
                 draw.text((1.8 * (cx + margin), cy - an_lineheight), dateform, fill=text_color, font=font1)
                 draw.text((1.9 * (cx + margin), cy), timeform, fill=text_color, font=font1)
-                draw.text((1.6 * (cx + margin), cy + an_lineheight * 2), temperature[0], fill=temperature[1], font=font2)
+                draw.text((1.65 * (cx + margin), cy + an_lineheight * 2), temp, fill=temp_color, font=font2)
 
                 # plot schedules on ellipse
                 _plot_schedule(draw, origin, R, sch_plot_R, R_ratio, schs)
@@ -270,30 +276,26 @@ class SunlightControl(Thread):
 
     def format_watertemp(self, temp: float, after_decimal_point: int=1):
         """ return (current water temperature str, color) """
-        return self.temp_unit.value_with_mark(temp), self._color_judge(temp)
+        return self.temp_unit.value_with_mark(temp, after_decimal_point), self.judge_temp_color(temp)
 
-    def _color_judge(self, temp):
-        # TODO: ASIS
-        remote = self._timer.remote
+    def judge_temp_color(self, temp):
+        """
+        and request IFTTT to operate heater & cooler
+        :param temp: float
+        :return: color number or name by str
+        """
         under, upper = self.temps
         safe_color, hot_color, cold_color = self.temp_colors
         # IFTTT only
-        if temp < under :
-            if self._temp_state != 'cold': self._simple_trigger(remote, self.toocold_operations)
-            self._temp_state = 'cold'
+        if temp < under:
+            self.temp_state = TempState.too_cold
             return cold_color
         elif temp > upper:
-            if  self._temp_state != 'hot': self._simple_trigger(remote, self.toohot_operations)
-            self._temp_state = 'hot'
+            self.temp_state = TempState.too_hot
             return hot_color
         else:
-            if self._temp_state != 'safe': self._simple_trigger(remote, self.safetemp_operations)
-            self._temp_state = 'safe'
+            self.temp_state = TempState.safe
             return safe_color
-
-    def _simple_trigger(self, ins, operations):
-        [ins.send_HTTP_trigger(c, r) \
-            for c, r in [(a['command'], a['repeat']) for a in [act[0] for act in [acts for acts in operations]]]]
 
     def run(self):
         self.core_process(DrawType(self.PARAMS['DISPLAY']['gui_type']))
@@ -312,10 +314,15 @@ class SunlightControl(Thread):
             version='%s'%__VERSION__)
         argParser.add_argument('-c', '--configure',
             nargs='?', type=str, default=SETTING,
-            help='config file that wrote by yaml describe params, see default=%s'%SETTING)
+            help=f'config file that wrote by yaml describe params, see default={SETTING}')
         return argParser.parse_args()
 
 # drawer utilities calculator funcs
+def posn(angle, arm_length):
+    dx = int(math.cos(math.radians(angle)) * arm_length)
+    dy = int(math.sin(math.radians(angle)) * arm_length)
+    return dx, dy
+
 def _circular(r, origin):
     return tuple([x - r for x in origin]), tuple([x + r for x in origin])
 

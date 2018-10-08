@@ -55,7 +55,7 @@ class LEDLightDayTimer(object):
         if not self._sched.empty():
             [self._sched.cancel(ev) for ev in self._sched.queue]
             if hasattr(self, '_p'):
-                self.logger.info("try to join() Process. {}".format(self._p))
+                self.logger.info(f"try to join() Process. {self._p}")
                 self._p.join(0.5)
                 if not self._p.is_alive():
                     self.logger.info("joined Process.")
@@ -71,22 +71,23 @@ class LEDLightDayTimer(object):
                                     self._do, argument=(val.name, val.display_info, val.operations, self.remote))
             else:
                 msg = DISSMISS
-            self.logger.info('{} {} @ {}: '.format(val.name, msg,
-                                                val.time.strftime('%Y-%m-%d %H:%M:%S%z')))
+
+            t = val.time.strftime('%Y-%m-%d %H:%M:%S%z')
+            self.logger.info(f'{val.name} {msg} @ {t}: ')
             if msg == FIRE:
                 # expand __str__
-                [self.logger.info('- %s'%o) for o in val.operations]
+                [self.logger.info(f'- {o}') for o in val.operations]
         if not self._sched.empty():
             # just wait in another process, until all schedules were usedup.
             self._p = Process(name='schedulings', target=self._sched.run, args=())
             self._p.daemon = True
             self._p.start()
-            self.logger.info('Process @{} {} has (re)started.'.format(self._p, self._p.pid))
+            self.logger.info(f'Process @{self._p} {self._p.pid} has (re)started.')
         return self._sched.queue
 
     def _do(self, name, display_info, ops, ins):
         # name and display_info are only Event id, not effective here
-        self.logger.debug('&&&&&&&&&&&&& len(ops) = %d &&&&&&&&&&&&&&&'%len(ops))
+        self.logger.debug(f'&&&&&&&&&&&&& len(ops) = {len(ops)} &&&&&&&&&&&&&&&')
         for op in ops:
             op.do(ins)
         del self._schedules[name]
