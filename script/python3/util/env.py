@@ -71,7 +71,7 @@ class TemperatureUnits(Enum):
         return form.format(self._convert(value))
 
     def _convert(self, value):
-        if self == C:
+        if self == TemperatureUnits.C:
             return float(value)
-        elif self == F:
+        elif self == TemperatureUnits.F:
             return float(value) * 1.80 + 32.00
