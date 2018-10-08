@@ -6,7 +6,7 @@ import os, sys, argparse, yaml, math, time, subprocess as sp
 from threading import Thread, Event
 from datetime import datetime, timedelta
 
-from util.env import expand_env, TemperatureUnits, DrawType
+from util.env import expand_env, SETTING, TemperatureUnits, DrawType
 from util.timer import LEDLightDayTimer
 from util.remote import Remote
 from util.weather_info import WeatherInfo
@@ -23,11 +23,6 @@ else:
 from time import sleep
 
 __VERSION__ = "1.0"
-
-_BASE = os.path.dirname(os.path.abspath(__file__))
-# for avoid virtualenv
-SETTING = os.path.normpath(os.path.join(_BASE, '../../settings/ledlight.yml')) \
-            if not is_debug() else os.path.expanduser('~/Github/SunlightControl/settings/ledlight.yml')
 
 DEBUG = False
 

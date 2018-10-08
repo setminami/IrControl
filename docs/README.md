@@ -233,4 +233,23 @@ $ irsend send_once ledlight r0
 
 ```
 
+## Interpreter
+use Python > 3.6.0 to code with f-string</br>
+this repo tested by 3.7.0
+
+e.g.., on raspiZW stretch 3.5 -> 3.7.0 installation memo
+```
+$ sudo apt-get update
+$ sudo apt-get install build-essential tk-dev libncurses5-dev libncursesw5-dev libreadline6-dev libdb5.3-dev libgdbm-dev libsqlite3-dev libssl-dev libbz2-dev libexpat1-dev liblzma-dev zlib1g-dev libffi-dev
+# 3.7.0 need libffi-dev
+$ wget https://www.python.org/ftp/python/3.7.0/Python-3.7.0.tar.xz
+$ tar xf Python-3.6.0.tar.xz
+$ cd Python-3.6.0
+$ ./configure
+# or ./configure --enable-optimizations
+$ make -j 2
+# raspiZero has 2 core, 3B(+) has 4
+$ sudo make altinstall
+```
+
 TODO: write "how to debug"
