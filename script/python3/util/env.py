@@ -1,11 +1,18 @@
 # -*- coding: utf-8 -*-
 # this made for python3
 
-from os import environ
+from os import environ, path
 from enum import Enum
 from PIL import ImageFont
 
 from util import is_debug
+
+_BASE = path.dirname(path.abspath(__file__))
+# for avoid virtualenv
+SETTING = path.normpath(path.join(_BASE, '../../../settings/ledlight.yml'))
+ONEW_DEVICE_PATH = path.normpath('/sys/bus/w1/devices/{}/w1_slave') if not is_debug() else \
+                    path.normpath(path.join(_BASE, '../../../environment/w1_demo'))
+
 
 def expand_env(params, verbose=False):
     """ dotenv like function, but not dotenv """

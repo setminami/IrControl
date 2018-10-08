@@ -2,17 +2,18 @@
 # this made for python3
 
 from . import module_logger, is_debug
+from .env import ONEW_DEVICE_PATH
 import re
 
 class ThermoInfo(object):
     """
     call data from 1-wire thermometer
     """
-    device_path = '/sys/bus/w1/devices/{}/w1_slave'
+    device_path = ONEW_DEVICE_PATH
 
     def __init__(self, rom_code, prev):
         self._devfile = self.device_path.format(rom_code) \
-                            if not is_debug() else '../../environment/w1_demo'
+                            if not is_debug() else self.device_path
         self._prev_temp, self._prev_crc = prev
         self.logger = module_logger(__class__.__name__)
 
