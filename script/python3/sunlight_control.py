@@ -61,6 +61,7 @@ class SunlightControl(Thread):
             remote.setup_ir_keycodes(x)
             self.remotes[x['name']] = remote
         timer.remote = self.remotes['ledlight']
+        self._temp_state = 'safe'
         self.live_update_params()
         self._timer = timer
         self.kill_received = False
@@ -68,12 +69,17 @@ class SunlightControl(Thread):
         super().__init__()
 
     def live_update_params(self):
-        self.temps = self.PARAMS['TEMPERATURE_MANAGER']['too_cold']['temp'], \
-                     self.PARAMS['TEMPERATURE_MANAGER']['too_hot']['temp']
-        self.temp_colors = self.PARAMS['TEMPERATURE_MANAGER']['default_color'], \
-                                self.PARAMS['TEMPERATURE_MANAGER']['too_cold']['color'], \
-                                self.PARAMS['TEMPERATURE_MANAGER']['too_hot']['color']
-        self.temp_unit = TemperatureUnits(self.PARAMS['TEMPERATURE_MANAGER']['unit'])
+        temp_manager = self.PARAMS['TEMPERATURE_MANAGER']
+        self.temps = temp_manager['too_cold']['temp'], \
+                     temp_manager['too_hot']['temp']
+        too_cold, too_hot = temp_manager['too_cold'], temp_manager['too_hot']
+        self.temp_colors = temp_manager['default_color'], \
+                                too_cold['color'], \
+                                too_hot['color']
+        self.temp_unit = TemperatureUnits(temp_manager['unit'])
+        self.toocold_operations = [too_hot['reactions']['down'], too_cold['reactions']['up']]
+        self.toohot_operations = [too_hot['reactions']['up'], too_cold['reactions']['down']]
+        self.safetemp_operations = [too_hot['reactions']['down'], too_cold['reactions']['up']]
 
     @property
     def timer(self):
@@ -272,14 +278,27 @@ class SunlightControl(Thread):
         return self.temp_unit.value_with_mark(temp), self._color_judge(temp)
 
     def _color_judge(self, temp):
+        # TODO: ASIS
+        remote = self._timer.remote
         under, upper = self.temps
         safe_color, hot_color, cold_color = self.temp_colors
-        if temp < under:
+        # IFTTT only
+        if temp < under :
+            if self._temp_state != 'cold': self._simple_trigger(remote, self.toocold_operations)
+            self._temp_state = 'cold'
             return cold_color
         elif temp > upper:
+            if  self._temp_state != 'hot': self._simple_trigger(remote, self.toohot_operations)
+            self._temp_state = 'hot'
             return hot_color
         else:
+            if self._temp_state != 'safe': self._simple_trigger(remote, self.safetemp_operations)
+            self._temp_state = 'safe'
             return safe_color
+
+    def _simple_trigger(self, ins, operations):
+        [ins.send_HTTP_trigger(c, r) \
+            for c, r in [(a['command'], a['repeat']) for a in [act[0] for act in [acts for acts in operations]]]]
 
     def run(self):
         self.core_process(DrawType(self.PARAMS['DISPLAY']['gui_type']))
