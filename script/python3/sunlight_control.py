@@ -42,7 +42,7 @@ class SunlightControl(Thread):
           params = yaml.load(f)
           self.PARAMS = expand_env(params, True)
 
-        self._device = get_device(['-d', 'ssd1331', '-i', 'spi', '--width', '96', '--height', '64'])
+        self._device = get_device(['--display', 'ssd1331', '-i', 'spi', '--width', '96', '--height', '64'])
         self._per_sec = per_sec # to check every _perse
         timer.timezone = self.PARAMS['TIMEZONE']
         self.remotes = {}
@@ -119,8 +119,8 @@ class SunlightControl(Thread):
 
     def _simple_trigger(self, ins, operations):
         acts = [a for a in [act for act in [acts for acts in operations]]]
-        [ins.send_HTTP_trigger(c, r) for c, r in [(a['command'], a['repeat']) for a in acts \
-                                                                        if a['remote'] is 'IFTTT']]
+        [ins.send_HTTP_trigger(c, r) for c, r in [(a[0]['command'], a[0]['repeat']) for a in acts \
+                                                                        if a[0]['remote'] is 'IFTTT']]
 
     def is_usedup(self):
         return len(self.active_schedules) == 0

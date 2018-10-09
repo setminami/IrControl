@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # this made for  python3.5.3
 
-import sys, pycurl, json, pytz, dateutil.parser
+import sys, requests, json, pytz, dateutil.parser
 import traceback, time
 from io import BytesIO
 from datetime import datetime, timedelta
@@ -25,16 +25,9 @@ class WeatherInfo(object):
         lat, lng, today = self.PARAMS['latitude'], self.PARAMS['longitude'], self._day.strftime('%Y-%m-%d')
         url_path = 'https://api.sunrise-sunset.org/json'
         retries_left = 5
-        # cannot use with as yield?
-        curl = pycurl.Curl()
-        curl.setopt(pycurl.URL, url_path + f'?lat={lat}&lng={lng}&formatted=0&date={today}')
-        b = BytesIO()
-        curl.setopt(pycurl.WRITEFUNCTION, b.write)
-        curl.setopt(pycurl.VERBOSE, DEBUG)
         while retries_left > 0:
             try:
-                curl.perform()
-                self._sunlights = json.loads(b.getvalue().decode('UTF-8'))
+                self._sunlights = requests.get(url_path, params={'lat': lat, 'lng': lng, 'formatted': 0, 'date': today}).json()
                 self.logger.debug(self._sunlights)
                 self.fetched_result = datetime.now() \
                     if self._sunlights['status'] == 'OK' else None # as success flag
@@ -44,11 +37,10 @@ class WeatherInfo(object):
                     traceback.print_exc()
                     exit(1)
                 else:
-                    self.logger.info(f'retry pycurl {retries_left}')
+                    self.logger.info(f'retry requests {retries_left}')
                     retries_left -= 1
                     time.sleep(2)
                     continue
-        curl.close()
 
     def _convByTZ(self, utcstr):
         self.logger.debug(f'call {sys._getframe().f_code.co_name}({utcstr})')

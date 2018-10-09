@@ -36,8 +36,8 @@ def display_settings(args):
     import luma.core
     version = f'luma.{lib_name} {lib_version} (luma.core {luma.core.__version__})'
 
-    return f'Version: {version}\nDisplay: {args.display}\n{iface}Dimensions: ' + \
-                f'{args.width} x {args.height}\n{'-' * 60}'
+    return f"Version: {version}\nDisplay: {args.display}\n{iface}Dimensions: \
+                        {args.width} x {args.height}\n{'-' * 60}"
 
 
 def get_device(actual_args=None):
@@ -46,7 +46,7 @@ def get_device(actual_args=None):
     """
     if actual_args is None:
         actual_args = sys.argv[1:]
-    parser = cmdline.create_parser(description='luma.examples arguments')
+    parser = cmdline.create_parser(description='SunlightControl luma display arguments')
     args = parser.parse_args(actual_args)
 
     if args.config:
