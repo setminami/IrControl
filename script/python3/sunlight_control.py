@@ -42,7 +42,7 @@ class SunlightControl(Thread):
           params = yaml.load(f)
           self.PARAMS = expand_env(params, True)
 
-        self._device = get_device(['--display', 'ssd1331', '-i', 'spi', '--width', '96', '--height', '64'])
+        self._device = get_device(['-i', 'spi', '--width', '96', '--height', '64'])
         self._per_sec = per_sec # to check every _perse
         timer.timezone = self.PARAMS['TIMEZONE']
         self.remotes = {}
