@@ -1,13 +1,19 @@
 pytz
 python-dateutil
 pyyaml
+
 Pillow
+luma.core
+# macOS preffer to install emulator,
+# but raspi smallest Stretch, have not pygame ver, occur installation error. in my case 
+# luma.emulator
 
 # Profilers for PyCharm
 memory_profiler
 snakeviz
 cprofilev
 psutil
+
 
 # pycurl  # might be not able to install pycurl because of openssl then, commentout this line and try below
 #
@@ -23,3 +29,5 @@ psutil
 # export PYCURL_SSL_LIBRARY=openssl
 # pip install --compile pycurl
 # if raspi stretch at least, run 'sudo pip install pycurl' simply.
+# TODO: "pycurl" is affected from backend oftenly, consider change "requests" for easy installation.
+requests

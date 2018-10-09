@@ -1,8 +1,21 @@
 #!/usr/bin/env bash
-export NATURESIM_PRJ_PATH=~/natureSim
-if [ -e $NATURESIM_PRJ_PATH ]; then
-  source $NATURESIM_PRJ_PATH/.sunlight_control.env
-  $NATURESIM_PRJ_PATH/SunlightControl/script/python3/sunlight_control.py > $NATURESIM_PRJ_PATH/log/SunLight.log 2>&1
+export SIMNATURE_PRJ_PATH=~/natureSim
+
+export PYTHONPATH=/usr/local/lib/python3.7:$SIMNATURE_PRJ_PATH/SunlightControl/script/python3
+export VIRTUALENVWRAPPER_PYTHON=/usr/local/bin/python3.7
+source /usr/local/bin/virtualenvwrapper.sh
+
+export WORKON_HOME=~/.virtualenvs
+
+echo "switch to" $1
+workon $1
+pip install -r $SIMNATURE_PRJ_PATH/SunlightControl/requirements.txt
+
+if [ -e $SIMNATURE_PRJ_PATH ]; then
+  source $SIMNATURE_PRJ_PATH/.sunlight_control.env
+  $SIMNATURE_PRJ_PATH/SunlightControl/script/python3/sunlight_control.py > $SIMNATURE_PRJ_PATH/log/SunLight.log 2>&1
 else
-  echo $NATURESIM_PRJ_PATH ' Couldnt find a project location.' 
+  echo $SIMNATURE_PRJ_PATH ' Couldnt find a project location.'
 fi
+
+deactivate
