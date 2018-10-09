@@ -69,15 +69,15 @@ class TemperatureUnits(Enum):
     C = 'Celsius'
     F = 'Fahrenheit'
 
-    def value_with_mark(self, value, adp=1, enc='utf-8'):
+    def value_with_mark(self, value, adp=1):
         """
         adp means 'after decimal point'
         return value as appropriate unit, with mark
         """
         form = '{:2.' + str(adp) + 'f}' + ('°' + self.value[0])
-        return form.format(self._convert(value))
+        return form.format(self._convert_as_float(value))
 
-    def _convert(self, value):
+    def _convert_as_float(self, value):
         if self == TemperatureUnits.C:
             return float(value)
         elif self == TemperatureUnits.F:

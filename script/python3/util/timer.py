@@ -71,7 +71,9 @@ class LEDLightDayTimer(object):
                                     self._do, argument=(val.name, val.display_info, val.operations, self.remote))
             else:
                 msg = DISSMISS
-            self.logger.info(f'{val.name} {msg} @ {val.time.strftime('%Y-%m-%d %H:%M:%S%z')}: ')
+
+            t = val.time.strftime('%Y-%m-%d %H:%M:%S%z')
+            self.logger.info(f'{val.name} {msg} @ {t}: ')
             if msg == FIRE:
                 # expand __str__
                 [self.logger.info(f'- {o}') for o in val.operations]

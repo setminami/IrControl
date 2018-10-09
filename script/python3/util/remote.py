@@ -32,16 +32,16 @@ class Remote(object):
         failure: { "errors": [{"message": "You sent an invalid key."}] }
         """
         ifttt_path = lambda key: self._ifttt_path.format(endpoint, key)
+        blind_key = ifttt_path('********')
         # WANTFIX: Why it prints many same lines when logger has been called from sched.run??
-        self.logger.info(f'run {endpoint} {repeat} for {ifttt_path('********')}')
+        self.logger.info(f'run {endpoint} {repeat} for {blind_key}')
         for i in range(repeat):
             res, l = "", 0
             while l < 3 and res != f"Congratulations! You've fired the {endpoint} event":
-                self.logger.info(f'try {i}-{l}: {ifttt_path('********')}')
+                self.logger.info(f'try {i}-{l}: {blind_key}')
                 # noneed to use pycurl or requests, thread unsafe on macOS 10.14.
                 res = sp.check_output(f'{self.http_cmd} {ifttt_path(self._ifttt_key)}', shell=True).decode('utf-8')
                 self.logger.info(res)
-                self.logger.info(f'command = {self.http_cmd} {ifttt_path(self._ifttt_key)}')
                 l += 1
 
     @property

@@ -247,8 +247,8 @@ $ tar xf Python-3.6.0.tar.xz
 $ cd Python-3.6.0
 $ ./configure
 # or ./configure --enable-optimizations
-$ make -j 2
-# raspiZero has 2 core, 3B(+) has 4
+$ make # -j 4
+# raspiZero has 1 core, 3B(+) has 4
 $ sudo make altinstall
 ```
 
