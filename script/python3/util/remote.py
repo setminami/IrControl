@@ -20,7 +20,7 @@ class Remote(object):
         Remote.set_keys(keycodes)
 
     def send_IR_key(self, key, repeat=1):
-        cmd = f'{self._ircmd} -#{repeat} SEND_ONCE ledlight key'
+        cmd = f'{self._ircmd} -#{repeat} SEND_ONCE ledlight {key}'
         # WANTFIX: Why it prints many same lines when logger has been called from sched.run??
         self.logger.info(cmd)
         sp.call(cmd, shell=True)
