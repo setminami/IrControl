@@ -23,13 +23,19 @@ else:
 from time import sleep
 
 __VERSION__ = "1.1.1"
+
 DEBUG = False
+ENV_DEBUG = False
 
 _SLEEP = 0.5
 
 class SunlightControl(Thread):
-
+    """
+    SimNature Project.SunlightControl core processing
+    """
     def __init__(self, timer, per_sec, setting=None):
+        self.__version__ = __VERSION__
+        self.logger = module_logger(__class__.__name__)
         if __name__ == '__main__':
             self.ARGS = SunlightControl.ArgParser()
             self.config_path = self.ARGS.configure
@@ -38,11 +44,15 @@ class SunlightControl(Thread):
             self.config_path = setting
 
         with open(self.config_path, "r") as f:
-          params = yaml.load(f)
-          self.PARAMS = expand_env(params, True)
-        # -d select from luma.core.cmdline.get_supported_libraries
-        self._device = get_device(['-d', 'ssd1331', '-i', 'spi', '--width', '96', '--height', '64'])
-        self._per_sec = per_sec # to check every _perse
+            self.PARAMS = expand_env(yaml.load(f), ENV_DEBUG)
+        ds = self.PARAMS['DISPLAY']['hardware_opts'].items()
+        opts = []
+        for opt, v in ds:
+            opts.append(f'--{opt}')
+            opts.append(str(v))
+        self.logger.info(f'lets kickup display device by {opts}')
+        self._device = get_device(opts)
+        self._per_sec = per_sec  # to check every /sec
         timer.timezone = self.PARAMS['TIMEZONE']
         self.remotes = {}
         # restrict update lircd for running
@@ -55,25 +65,11 @@ class SunlightControl(Thread):
             remote.setup_ir_keycodes(x)
             self.remotes[x['name']] = remote
         timer.remote = self.remotes['ledlight']
-        self._temp_state = 'safe'
+        self._temp_state = TempState('safe')
         self.live_update_params()
         self._timer = timer
         self.kill_received = False
-        self.logger = module_logger(__class__.__name__)
         super().__init__()
-
-    def live_update_params(self):
-        temp_manager = self.PARAMS['TEMPERATURE_MANAGER']
-        self.temps = temp_manager['too_cold']['temp'], \
-                     temp_manager['too_hot']['temp']
-        too_cold, too_hot = temp_manager['too_cold'], temp_manager['too_hot']
-        self.temp_colors = temp_manager['default_color'], \
-                                too_cold['color'], \
-                                too_hot['color']
-        self.temp_unit = TemperatureUnits(temp_manager['unit'])
-        self.toocold_operations = [too_hot['reactions']['down'], too_cold['reactions']['up']]
-        self.toohot_operations = [too_hot['reactions']['up'], too_cold['reactions']['down']]
-        self.safetemp_operations = [too_hot['reactions']['down'], too_cold['reactions']['up']]
 
     @property
     def timer(self):
@@ -104,6 +100,7 @@ class SunlightControl(Thread):
 
     @property
     def temp_state(self):
+        # restrict to access before init.
         assert hasattr(self, '_temp_state')
         assert isinstance(self._temp_state, TempState)
         return self._temp_state
@@ -111,14 +108,17 @@ class SunlightControl(Thread):
     @temp_state.setter
     def temp_state(self, val: TempState):
         if val != self._temp_state:
-            if val is TempState.too_hot: operations = self.toohot_operations
-            elif val is TempState.too_cold: operations = self.toocold_operations
-            else: operations = self.safetemp_operations
+            if val is TempState.too_hot:
+                assert hasattr(self, 'toohot_operations')
+                operations = self.toohot_operations
+            elif val is TempState.too_cold:
+                assert hasattr(self, 'toocold_operations')
+                operations = self.toocold_operations
+            else:
+                assert hasattr(self, 'safetemp_operations')
+                operations = self.safetemp_operations
             SunlightControl._simple_ifttt_trigger(self.timer.remote, operations)
             self._temp_state = val
-
-    def is_usedup(self):
-        return len(self.active_schedules) == 0
 
     # display control
     @property
@@ -137,19 +137,60 @@ class SunlightControl(Thread):
     def _scheduling(self):
         return self._timer.do_schedule()
 
+    # util
+    def live_update_params(self):
+        temp_manager = self.PARAMS['TEMPERATURE_MANAGER']
+        self.temp_sh = temp_manager['too_cold']['temp'], temp_manager['too_hot']['temp']
+        too_cold, too_hot = temp_manager['too_cold'], temp_manager['too_hot']
+        self.temp_colors = temp_manager['default_color'], too_cold['color'], too_hot['color']
+        self.temp_unit = TemperatureUnits(temp_manager['unit'])
+        self.toocold_operations = [too_hot['reactions']['down'], too_cold['reactions']['up']]
+        self.toohot_operations = [too_hot['reactions']['up'], too_cold['reactions']['down']]
+        self.safetemp_operations = [too_hot['reactions']['down'], too_cold['reactions']['up']]
+
+    def is_usedup(self):
+        if len(self.active_schedules) == 0:
+            self.logger.info('########### useduped all schedules! ################')
+            return True
+        else:
+            return False
+
     def update_settings(self, day):
         """
         organize yaml settings
         An item which expected realtime update, describe here istead of __init__
         """
         with open(self.config_path, "r") as f:
-          params = yaml.load(f)
-          self.PARAMS = expand_env(params, True)
+            self.PARAMS = expand_env(yaml.load(f), ENV_DEBUG)
 
         self.live_update_params()
         self._setup_weather_info(day)
         return self._scheduling()
 
+    def format_watertemp(self, temp: float, after_decimal_point: int=1):
+        """ return (current water temperature str, color) """
+        return self.temp_unit.value_with_mark(temp, after_decimal_point), self.judge_temp_color(temp)
+
+    def judge_temp_color(self, temp):
+        """
+        and request IFTTT to operate heater & cooler
+        :param temp: float
+        :return: color number or name by str
+        """
+        under, upper = self.temp_sh
+        safe_color, hot_color, cold_color = self.temp_colors
+        # IFTTT only
+        if temp < under:
+            self.temp_state = TempState.too_cold
+            return cold_color
+        elif temp > upper:
+            self.temp_state = TempState.too_hot
+            return hot_color
+        else:
+            self.temp_state = TempState.safe
+            return safe_color
+
+    # Thread func
     def core_process(self, draw_type):
         if DEBUG:
             import tracemalloc
@@ -169,7 +210,6 @@ class SunlightControl(Thread):
                 snap1 = tracemalloc.take_snapshot()
             now = datetime.now(self.timer.timezone)
             if self.is_usedup():
-                self.logger.debug('########### is_usedup() ################')
                 day = now
                 while len(self.active_schedules) == 0:
                     self.logger.info('Schedules set for day: {}'.format(day.strftime('%Y-%m-%d')))
@@ -268,29 +308,6 @@ class SunlightControl(Thread):
                 # plot schedules on ellipse
                 _plot_schedule(draw, origin, R, sch_plot_R, R_ratio, schs)
                 return display_name, dateform, timeform
-
-    def format_watertemp(self, temp: float, after_decimal_point: int=1):
-        """ return (current water temperature str, color) """
-        return self.temp_unit.value_with_mark(temp, after_decimal_point), self.judge_temp_color(temp)
-
-    def judge_temp_color(self, temp):
-        """
-        and request IFTTT to operate heater & cooler
-        :param temp: float
-        :return: color number or name by str
-        """
-        under, upper = self.temps
-        safe_color, hot_color, cold_color = self.temp_colors
-        # IFTTT only
-        if temp < under:
-            self.temp_state = TempState.too_cold
-            return cold_color
-        elif temp > upper:
-            self.temp_state = TempState.too_hot
-            return hot_color
-        else:
-            self.temp_state = TempState.safe
-            return safe_color
 
     def run(self):
         self.core_process(DrawType(self.PARAMS['DISPLAY']['gui_type']))
