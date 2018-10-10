@@ -1,22 +1,45 @@
 #!/usr/bin/env bash
-export SIMNATURE_PRJ_PATH=~/natureSim
+SIMNATURE_PRJ_PATH=~/natureSim
+PRJ_NAME=SunlightControl
 PYVERSION=3.7
+PRJ_PATH=${SIMNATURE_PRJ_PATH}/${PRJ_NAME}
+DEFAULT_VENV_NAME=SIM_Nature
+echo $#
 
-export PYTHONPATH=/usr/local/lib/python$PYVERSION:$SIMNATURE_PRJ_PATH/SunlightControl/script/python3
-export VIRTUALENVWRAPPER_PYTHON=/usr/local/bin/python$PYVERSION
-source /usr/local/bin/virtualenvwrapper.sh
+if [ $# -eq 1 ]; then
+  export WORK_ENV=$1
+else
+  echo -e 'usage:' $0 'virtualenvname\nThis Session use' ${DEFAULT_VENV_NAME} 'as default.'
+  export WORK_ENV=${DEFAULT_VENV_NAME}
+fi
 
 export WORKON_HOME=~/.virtualenvs
+export PYTHONPATH=/usr/local/lib/python${PYVERSION}:${PRJ_PATH}/script/python3
+export VIRTUALENVWRAPPER_PYTHON=`which python${PYVERSION}`
+echo ${VIRTUALENVWRAPPER_PYTHON}
+echo `which virtualenvwrapper.sh`
+source `which virtualenvwrapper.sh`
 
-echo "switch to" $1
-workon $1
-pip install -r $SIMNATURE_PRJ_PATH/SunlightControl/requirements.txt
+echo OK switch to ${WORK_ENV}
+workon ${WORK_ENV}
 
-if [ -e $SIMNATURE_PRJ_PATH ]; then
-  source $SIMNATURE_PRJ_PATH/.sunlight_control.env
-  $SIMNATURE_PRJ_PATH/SunlightControl/script/python3/sunlight_control.py > $SIMNATURE_PRJ_PATH/log/SunLight.log 2>&1
+# Darwin is develop, else is full wired IoT machine
+if [ `uname -s` == 'Darwin' ]; then
+  echo on `sw_vers -productName` `sw_vers -productVersion`
+  REQUIRE=DEVELOP.txt
+elif [ `uname -s` == 'Linux' ]; then
+  # uname -m is ZeroW = 'armv6l', B =...
+  echo on `egrep 'PRETTY_NAME=' /etc/os-release`
+  REQUIRE=ACTUAL.txt
+fi
+
+pip install -r ${PRJ_PATH}/requirements/$REQUIRE
+
+if [ -e ${PRJ_PATH} ]; then
+  source ${SIMNATURE_PRJ_PATH}/.sunlight_control.env
+  ${PRJ_PATH}/script/python3/sunlight_control.py > ${SIMNATURE_PRJ_PATH}/log/SunLight.log 2>&1
 else
-  echo $SIMNATURE_PRJ_PATH ' Couldnt find a project location.'
+  echo ${PRJ_PATH} Couldnt find a project location.
 fi
 
 deactivate

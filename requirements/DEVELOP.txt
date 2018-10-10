@@ -1,0 +1,23 @@
+pytz
+python-dateutil
+pyyaml
+
+# screen utility
+Pillow
+pygame
+luma.core
+
+# next 2 modules need not in old luma
+# raspi implemented oled,
+# luma.oled
+# macOS preffer to install emulator, but raspi not need
+luma.emulator
+
+# Profilers for PyCharm
+memory_profiler
+snakeviz
+cprofilev
+psutil
+
+# Networks
+requests
