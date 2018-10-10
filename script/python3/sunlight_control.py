@@ -22,8 +22,7 @@ else:
 
 from time import sleep
 
-__VERSION__ = "1.0"
-
+__VERSION__ = "1.1.1"
 DEBUG = False
 
 _SLEEP = 0.5
@@ -41,8 +40,8 @@ class SunlightControl(Thread):
         with open(self.config_path, "r") as f:
           params = yaml.load(f)
           self.PARAMS = expand_env(params, True)
-
-        self._device = get_device(['-i', 'spi', '--width', '96', '--height', '64'])
+        # -d select from luma.core.cmdline.get_supported_libraries
+        self._device = get_device(['-d', 'ssd1331', '-i', 'spi', '--width', '96', '--height', '64'])
         self._per_sec = per_sec # to check every _perse
         timer.timezone = self.PARAMS['TIMEZONE']
         self.remotes = {}

@@ -246,7 +246,7 @@ $ wget https://www.python.org/ftp/python/3.7.0/Python-3.7.0.tar.xz
 $ tar xf Python-3.6.0.tar.xz
 $ cd Python-3.6.0
 $ ./configure
-# or ./configure --enable-optimizations
+# or ./configure --enable-optimizations , but optimizer affects libsdl?
 $ make # -j 4
 # raspiZero has 1 core, 3B(+) has 4
 $ sudo make altinstall
@@ -273,6 +273,20 @@ Python 3.7.0
 (SunlightControl) ~/natureSim/SunlightControl $ deactivate
 # Donot forget luma the OLED lib update on /usr/local/bin/python3.7
 $ sudo -H /usr/local/bin/python3.7 -m pip install --upgrade luma.oled
+
+# In some case, you may try to install pygame manually for OLED.
+# ∵ wheels for raspi is not to consider over python3.5 and donot care your DIYed HW.
+# e.g., cannot get luma.core device_list() display_choices = []
+$ sudo apt-get install mercurial
+$ hg clone https://bitbucket.org/pygame/pygame
+$ cd pygame
+
+$ sudo apt-get install libsdl-dev libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-ttf2.0-dev
+$ sudo apt-get install libsmpeg-dev libportmidi-dev libavformat-dev libswscale-dev
+$ sudo apt-get install python3-dev python3-numpy
+
+$ /usr/local/bin/python3.7 setup.py build
+$ sudo /usr/local/bin/python3.7 setup.py install
 ```
 
 TODO: write "how to debug"

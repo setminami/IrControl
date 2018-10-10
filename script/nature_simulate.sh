@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 export SIMNATURE_PRJ_PATH=~/natureSim
+PYVERSION=3.7
 
-export PYTHONPATH=/usr/local/lib/python3.7:$SIMNATURE_PRJ_PATH/SunlightControl/script/python3
-export VIRTUALENVWRAPPER_PYTHON=/usr/local/bin/python3.7
+export PYTHONPATH=/usr/local/lib/python$PYVERSION:$SIMNATURE_PRJ_PATH/SunlightControl/script/python3
+export VIRTUALENVWRAPPER_PYTHON=/usr/local/bin/python$PYVERSION
 source /usr/local/bin/virtualenvwrapper.sh
 
 export WORKON_HOME=~/.virtualenvs
