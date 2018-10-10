@@ -45,7 +45,7 @@ class SunlightControl(Thread):
         self._per_sec = per_sec # to check every _perse
         timer.timezone = self.PARAMS['TIMEZONE']
         self.remotes = {}
-        # restrict update lircd for runnning
+        # restrict update lircd for running
         irsend, httpcmd = 'echo' if is_debug() \
             else sp.check_output(['which', self.PARAMS['IRSEND_CMD']]).decode('utf-8')[:-1], \
             '{} -sl'.format(sp.check_output(['which', 'curl']).decode('utf-8')[:-1])
@@ -97,6 +97,7 @@ class SunlightControl(Thread):
             return sorted([x for x in self._active_schedules if x.time > datetime.now().timestamp()], key = lambda x: x.time)
         else:
             return []
+
     @active_schedules.setter
     def active_schedules(self, val):
         self._active_schedules = val
@@ -113,13 +114,8 @@ class SunlightControl(Thread):
             if val is TempState.too_hot: operations = self.toohot_operations
             elif val is TempState.too_cold: operations = self.toocold_operations
             else: operations = self.safetemp_operations
-            self._simple_trigger(self.timer.remote, operations)
+            SunlightControl._simple_ifttt_trigger(self.timer.remote, operations)
             self._temp_state = val
-
-    def _simple_trigger(self, ins, operations):
-        acts = [a for a in [act for act in [acts for acts in operations]]]
-        [ins.send_HTTP_trigger(c, r) for c, r in [(a[0]['command'], a[0]['repeat']) for a in acts \
-                                                                        if a[0]['remote'] is 'IFTTT']]
 
     def is_usedup(self):
         return len(self.active_schedules) == 0
@@ -131,7 +127,7 @@ class SunlightControl(Thread):
         return self._device
 
     # operate transferred instance
-    def _setup_wether_info(self, day):
+    def _setup_weather_info(self, day):
         # TODO: check memory usage
         TIMESHIFTS = 'TIMESHIFTS' if not is_debug() else 'TIMESHIFTS_for_debg'
         self._timer.weather = WeatherInfo(day, self.PARAMS['SUNLIGHT_STATUS_API'],
@@ -151,7 +147,7 @@ class SunlightControl(Thread):
           self.PARAMS = expand_env(params, True)
 
         self.live_update_params()
-        self._setup_wether_info(day)
+        self._setup_weather_info(day)
         return self._scheduling()
 
     def core_process(self, draw_type):
@@ -303,17 +299,23 @@ class SunlightControl(Thread):
         self.kill_received = True
 
     @staticmethod
+    def _simple_ifttt_trigger(ins, operations):
+        acts = [a for a in [act for act in [acts for acts in operations]]]
+        [ins.send_HTTP_trigger(c, r) for c, r in [(a[0]['command'], a[0]['repeat']) for a in acts \
+                                                  if a[0]['remote'] is 'IFTTT']]
+
+    @staticmethod
     def ArgParser():
         argParser = argparse.ArgumentParser(prog=__file__,
-            description='Control ledlight with infra-red remote',
-            usage='%s -v -c [setting file name by yaml]'%__file__)
+                                            description='Control ledlight with infra-red remote',
+                                            usage='%s -v -c [setting file name by yaml]'%__file__)
         # Version desctiprtion
         argParser.add_argument('-v', '--version',
-            action='version',
-            version='%s'%__VERSION__)
+                                action='version',
+                                version='%s'%__VERSION__)
         argParser.add_argument('-c', '--configure',
-            nargs='?', type=str, default=SETTING,
-            help=f'config file that wrote by yaml describe params, see default={SETTING}')
+                                nargs='?', type=str, default=SETTING,
+                                help=f'config file that wrote by yaml describe params, see default={SETTING}')
         return argParser.parse_args()
 
 # drawer utilities calculator funcs
