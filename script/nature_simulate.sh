@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-PREFIX=/usr/local
-SIMNATURE_PRJ_PATH=~/natureSim
+RUNNABLE_PREFIX=/usr/local
+SIMNATURE_PRJ_PATH=~/Simnature
 PRJ_NAME=SunlightControl
 PYVERSION=3.7
 PRJ_PATH=${SIMNATURE_PRJ_PATH}/${PRJ_NAME}
@@ -9,6 +9,7 @@ LOG_DIR=${SIMNATURE_PRJ_PATH}/log
 LOG_FILE=${LOG_DIR}/SunLight.log
 
 if [ -s $LOGFILE ]; then
+  pip freeze >> ${LOG_FILE}
   mv ${LOG_FILE} ${LOG_DIR}/`date "+%Y%m%d-%H%M%S%Z"`.sunlight.log
 fi
 
@@ -19,10 +20,11 @@ else
   export WORK_ENV=${DEFAULT_VENV_NAME}
 fi
 
+# start virtualenv with wrapper
 export WORKON_HOME=~/.virtualenvs
-export PYTHONPATH=${PREFIX}/lib/python${PYVERSION}:${PRJ_PATH}/script/python3
-export VIRTUALENVWRAPPER_PYTHON=${PREFIX}/bin/python${PYVERSION}
-until source ${PREFIX}/bin/virtualenvwrapper.sh; do
+export PYTHONPATH=${RUNNABLE_PREFIX}/lib/python${PYVERSION}:${PRJ_PATH}/script/python3
+export VIRTUALENVWRAPPER_PYTHON=${RUNNABLE_PREFIX}/bin/python${PYVERSION}
+until source ${RUNNABLE_PREFIX}/bin/virtualenvwrapper.sh; do
   echo fail virtualenv setup
   sleep 10
 done
@@ -44,7 +46,7 @@ pip install -r ${PRJ_PATH}/requirements/$REQUIRE
 
 if [ -e ${PRJ_PATH} ]; then
   source ${SIMNATURE_PRJ_PATH}/.sunlight_control.env
-  ${PRJ_PATH}/script/python3/sunlight_control.py > ${SIMNATURE_PRJ_PATH}/log/SunLight.log 2>&1
+  ${PRJ_PATH}/script/python3/sunlight_control.py > ${LOG_FILE} 2>&1
 else
   echo ${PRJ_PATH} Couldnt find a project location.
 fi

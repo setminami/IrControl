@@ -1,5 +1,11 @@
 DISPLAY:
   gui_type: CLOCK # as placeholder, CLOCK only
+  hardware_opts:
+    display: ssd1331
+    rotate: 0
+    interface: spi
+    width: 96
+    height: 64
 
 # RGB keys presents as grid ref docs/img/remotecontroller.png in this file.
 # like, (0, 0) points ON Key, ....(1,3) points R Key
@@ -57,11 +63,11 @@ TEMPERATURE_MANAGER:
       up:
         - command: coolingfan_on
           remote: IFTTT
-          repeat: 1
+          repeat: 3
       down:
         - command: coolingfan_off
           remote: IFTTT
-          repeat: 1
+          repeat: 3
   too_cold:
     temp: 24.0
     color: '#0033ff'
@@ -69,11 +75,11 @@ TEMPERATURE_MANAGER:
       up:
         - command: subheater_off
           remote: IFTTT
-          repeat: 1
+          repeat: 3
       down:
         - command: subheater_on
           remote: IFTTT
-          repeat: 1
+          repeat: 3
 
 LINEAR: False # (no implementation) If True, time settings are auto calculated linearly between TIMESHIFTS.
 # ref. https://api-sunrise-sunset.org/ , each names of operation must be matched with WeatherInfo.properties (e.g., sunrise, sunset)
@@ -170,7 +176,7 @@ TIMESHIFTS:
         repeat: 3
       - remote: IFTTT
         command: weaklight_on
-        repeat: 1 # because IFTTT is on TCP
+        repeat: 3 # IFTTT + smartlife tell a lie status200 sometime
 
 
   solar_noon:
@@ -186,7 +192,7 @@ TIMESHIFTS:
         repeat: 16
       - remote: IFTTT
         command: noonlight_on
-        repeat: 1 # because IFTTT is on TCP
+        repeat: 3
 
   evening:
     display:
@@ -204,7 +210,7 @@ TIMESHIFTS:
         repeat: 16
       - remote: IFTTT
         command: noonlight_off
-        repeat: 1 # because IFTTT is on TCP
+        repeat: 3
 
   sunset:
     display:
@@ -219,7 +225,7 @@ TIMESHIFTS:
         repeat: 3
       - remote: IFTTT
         command: weaklight_off
-        repeat: 1 # because IFTTT is on TCP
+        repeat: 3
 
   twilight:
     display:
@@ -324,7 +330,7 @@ TIMESHIFTS_for_debg:
         repeat: 3
       - remote: IFTTT
         command: weaklight_on
-        repeat: 1 # because IFTTT is on TCP
+        repeat: 3
 
 
   solar_noon:
@@ -340,7 +346,7 @@ TIMESHIFTS_for_debg:
         repeat: 16
       - remote: IFTTT
         command: noonlight_on
-        repeat: 1 # because IFTTT is on TCP
+        repeat: 3
 
   evening:
     display:
@@ -358,7 +364,7 @@ TIMESHIFTS_for_debg:
         repeat: 16
       - remote: IFTTT
         command: noonlight_off
-        repeat: 1 # because IFTTT is on TCP
+        repeat: 3
 
   sunset:
     display:
@@ -373,7 +379,7 @@ TIMESHIFTS_for_debg:
         repeat: 3
       - remote: IFTTT
         command: weaklight_off
-        repeat: 1 # because IFTTT is on TCP
+        repeat: 3
 
   twilight:
     display:
