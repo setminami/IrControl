@@ -14,6 +14,11 @@ ONEW_DEVICE_PATH = path.normpath('/sys/bus/w1/devices/{}/w1_slave') if not is_de
                     path.normpath(path.join(_BASE, '../../../environment/w1_demo'))
 
 
+# out of SunlightControl subPrj.
+def schedule_output_path(file_name):
+    return path.normpath(path.join(path.join(_BASE, '../../../../outputs'), file_name))
+
+
 def expand_env(params, verbose=False):
     """ dotenv like function, but not dotenv """
     for key, val in params.items():

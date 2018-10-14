@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 # this made for python3
 
+import pytz, time
 from datetime import datetime
-import sys, logging, pytz
 
+from json import dumps
 from sched import scheduler
-from multiprocessing import Pool, Process
-import time
+from multiprocessing import Process
 # sched is not support datetime but time
 # TypeError: unsupported operand type(s) for +: 'datetime.datetime'
 
 from util.weather_info import WeatherInfo
 from util.remote import Remote
 from . import module_logger
+from util.env import schedule_output_path
 
 class LEDLightDayTimer(object):
     """ a simple day timer """
@@ -68,15 +69,19 @@ class LEDLightDayTimer(object):
             if val.time >= now:
                 msg = FIRE
                 self._sched.enterabs(time.mktime(val.time.timetuple()), 2,
-                                    self._do, argument=(val.name, val.display_info, val.operations, self.remote))
+                                     self._do, argument=(val.name, val.display_info, val.operations, self.remote))
             else:
                 msg = DISSMISS
 
+            val.msg = msg
             t = val.time.strftime('%Y-%m-%d %H:%M:%S%z')
             self.logger.info(f'{val.name} {msg} @ {t}: ')
             if msg == FIRE:
                 # expand __str__
                 [self.logger.info(f'- {o}') for o in val.operations]
+        self.output_schedule(schedule_output_path(now.strftime('%y%m%dT%H%M%S_%f') + '.sch'),
+                             [v.json for v in self._schedules.values()])
+
         if not self._sched.empty():
             # just wait in another process, until all schedules were usedup.
             self._p = Process(name='schedulings', target=self._sched.run, args=())
@@ -84,6 +89,10 @@ class LEDLightDayTimer(object):
             self._p.start()
             self.logger.info(f'Process @{self._p} {self._p.pid} has (re)started.')
         return self._sched.queue
+
+    def output_schedule(self, path, obj):
+        with open(path, 'w') as f:
+            f.write(dumps(obj))
 
     def _do(self, name, display_info, ops, ins):
         # name and display_info are only Event id, not effective here

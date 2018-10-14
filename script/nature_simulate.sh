@@ -8,7 +8,7 @@ DEFAULT_VENV_NAME=SIM_Nature
 LOG_DIR=${SIMNATURE_PRJ_PATH}/log
 LOG_FILE=${LOG_DIR}/SunLight.log
 
-if [ -s $LOGFILE ]; then
+if [ -s $LOG_FILE ]; then
   pip freeze >> ${LOG_FILE}
   mv ${LOG_FILE} ${LOG_DIR}/`date "+%Y%m%d-%H%M%S%Z"`.sunlight.log
 fi
