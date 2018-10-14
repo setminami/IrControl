@@ -233,4 +233,60 @@ $ irsend send_once ledlight r0
 
 ```
 
+## Interpreter
+use Python > 3.6.0 to code with f-string</br>
+this repo tested by 3.7.0
+
+e.g.., on raspiZW stretch 3.5 -> 3.7.0 installation memo
+```
+$ sudo apt-get update
+$ sudo apt-get install build-essential tk-dev libncurses5-dev libncursesw5-dev libreadline6-dev libdb5.3-dev libgdbm-dev libsqlite3-dev libssl-dev libbz2-dev libexpat1-dev liblzma-dev zlib1g-dev libffi-dev
+# 3.7.0 need libffi-dev
+$ wget https://www.python.org/ftp/python/3.7.0/Python-3.7.0.tar.xz
+$ tar xf Python-3.6.0.tar.xz
+$ cd Python-3.6.0
+$ ./configure
+# or ./configure --enable-optimizations , but optimizer affects libsdl?
+$ make # -j 4
+# raspiZero has 1 core, 3B(+) has 4
+$ sudo make altinstall
+# check them
+$ python3.7 --version
+Python 3.7.0
+$ type python3.7
+python3.7 is hashed (/usr/local/bin/python3.7)
+# commonly, python3(.5) might be /usr/bin/.
+-- You will keep clean environments (recommended) ---
+# need virtualenv & virtualenvwrapper setuped
+# export PYTHONPATH=/usr/local/lib/python3.7:$SIMNATURE_PRJ_PATH/SunlightControl/script/python3
+# export VIRTUALENVWRAPPER_PYTHON=/usr/local/bin/python3.7
+$ /usr/local/bin/python3.7 -m pip install virtualenv, virtualenvwrapper
+$ mkvirtualenv -p python3.7 SunlightControl
+(SunlightControl) ~/natureSim/SunlightControl $ python --version
+Python 3.7.0
+(SunlightControl) ~/natureSim/SunlightControl $ pip install --upgrade pip
+# Because first time pip_install need a long time.
+(SunlightControl) ~/natureSim/SunlightControl $ pip install -r requirements.txt
+... bla bla bla ...
+# If pycurl had held something wrong with gnutls, after update python3.7
+(SunlightControl) ~/natureSim/SunlightControl $ sudo apt-get upgrade
+(SunlightControl) ~/natureSim/SunlightControl $ deactivate
+# Donot forget luma the OLED lib update on /usr/local/bin/python3.7
+$ sudo -H /usr/local/bin/python3.7 -m pip install --upgrade luma.oled
+
+# In some case, you may try to install pygame manually for OLED.
+# ∵ wheels for raspi is not to consider over python3.5 and donot care your DIYed HW.
+# e.g., cannot get luma.core device_list() display_choices = []
+$ sudo apt-get install mercurial
+$ hg clone https://bitbucket.org/pygame/pygame
+$ cd pygame
+
+$ sudo apt-get install libsdl-dev libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-ttf2.0-dev
+$ sudo apt-get install libsmpeg-dev libportmidi-dev libavformat-dev libswscale-dev
+$ sudo apt-get install python3-dev python3-numpy
+
+$ /usr/local/bin/python3.7 setup.py build
+$ sudo /usr/local/bin/python3.7 setup.py install
+```
+
 TODO: write "how to debug"

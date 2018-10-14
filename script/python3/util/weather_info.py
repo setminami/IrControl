@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # this made for  python3.5.3
 
-import sys, pycurl, json, pytz, dateutil.parser
+import sys, requests, json, pytz, dateutil.parser
 import traceback, time
 from io import BytesIO
 from datetime import datetime, timedelta
@@ -25,16 +25,9 @@ class WeatherInfo(object):
         lat, lng, today = self.PARAMS['latitude'], self.PARAMS['longitude'], self._day.strftime('%Y-%m-%d')
         url_path = 'https://api.sunrise-sunset.org/json'
         retries_left = 5
-        # cannot use with as yield?
-        curl = pycurl.Curl()
-        curl.setopt(pycurl.URL, url_path + '?lat=%s&lng=%s&formatted=0&date=%s'%(lat, lng, today))
-        b = BytesIO()
-        curl.setopt(pycurl.WRITEFUNCTION, b.write)
-        curl.setopt(pycurl.VERBOSE, DEBUG)
         while retries_left > 0:
             try:
-                curl.perform()
-                self._sunlights = json.loads(b.getvalue().decode('UTF-8'))
+                self._sunlights = requests.get(url_path, params={'lat': lat, 'lng': lng, 'formatted': 0, 'date': today}).json()
                 self.logger.debug(self._sunlights)
                 self.fetched_result = datetime.now() \
                     if self._sunlights['status'] == 'OK' else None # as success flag
@@ -44,14 +37,13 @@ class WeatherInfo(object):
                     traceback.print_exc()
                     exit(1)
                 else:
-                    self.logger.info('retry pycurl %d'%retries_left)
+                    self.logger.info(f'retry requests {retries_left}')
                     retries_left -= 1
                     time.sleep(2)
                     continue
-        curl.close()
 
     def _convByTZ(self, utcstr):
-        self.logger.debug('call {}({})'.format(sys._getframe().f_code.co_name, utcstr))
+        self.logger.debug(f'call {sys._getframe().f_code.co_name}({utcstr})')
         self.logger.debug(self._sunlights)
         return dateutil.parser.parse(utcstr).astimezone(self.TZ)
 
@@ -60,7 +52,7 @@ class WeatherInfo(object):
             (hasattr(self, 'fetched_result') and (self.fetched_result is None or \
             datetime.now() > (self.fetched_result + timedelta(minutes=self.update_min)))):
             f()
-        self.logger.debug('call {} : {}'.format(sys._getframe().f_code.co_name, self._sunlights))
+        self.logger.debug(f'call {sys._getframe().f_code.co_name} : {self._sunlights}')
 
     def _parse_schedule_items(self, item_name):
         """ calculate time for item_name from schedule settings """
@@ -80,17 +72,17 @@ class WeatherInfo(object):
             if time[1] == 'end': idx = 1
             elif time[1] == 'begin': idx = 0
             else:
-                print('TIMESHIFTS.schedule.time settings incorrect. (begin, end) @%s'%(item_name))
+                print(f'TIMESHIFTS.schedule.time settings incorrect. (begin, end) @{item_name}')
                 exit(1)
             try:
-                start_time = eval('self._%s'%time[0])[idx]
+                start_time = eval(f'self._{time[0]}')[idx]
             except:
                 traceback.print_exc()
-                print('Couldnt eval @ [self._%s]'%time[0])
+                print(f'Couldnt eval @ [self._{time[0]}]')
                 exit(1)
         elif len(time) == 1:
             try:
-                start_time = eval('self._%s'%time[0])
+                start_time = eval(f'self._{time[0]}')
             except SyntaxError as se:
                 # eval() Error property not found
                 try:
@@ -100,11 +92,11 @@ class WeatherInfo(object):
                         start_time = datetime.now(self.TZ)
                     except :
                         traceback.print_exc()
-                        print('Couldnt parse %s'%(time[0]))
+                        print(f'Couldnt parse {time[0]}')
                         exit(1)
         else:
             traceback.print_exc()
-            print('TIMESHIFTS.schedule.time settings incorrect. @%s'%(item_name))
+            print(f'TIMESHIFTS.schedule.time settings incorrect. @{item_name}')
             exit(1)
         return start_time + timedelta(seconds=rel)
 
@@ -164,7 +156,7 @@ class WeatherInfo(object):
         # calltime = lambda x: eval('self.%s'%x)
         # return { x: calltime(x) for x in names }
         ret = {}
-        for x in names: ret[x] = eval('self.%s'%x)
+        for x in names: ret[x] = eval(f'self.{x}')
         return ret
 
     # the repo calculated properties

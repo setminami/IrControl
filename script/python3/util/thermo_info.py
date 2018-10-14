@@ -2,18 +2,20 @@
 # this made for python3
 
 from . import module_logger, is_debug
+from .env import ONEW_DEVICE_PATH
+from enum import Enum
 import re
 
 class ThermoInfo(object):
     """
     call data from 1-wire thermometer
     """
-    device_path = '/sys/bus/w1/devices/{}/w1_slave'
+    device_path = ONEW_DEVICE_PATH
 
-    def __init__(self, rom_code, crc):
+    def __init__(self, rom_code, prev):
         self._devfile = self.device_path.format(rom_code) \
-                            if not is_debug() else '../../environment/w1_demo'
-        self._crc = crc
+                            if not is_debug() else self.device_path
+        self._prev_temp, self._prev_crc = prev
         self.logger = module_logger(__class__.__name__)
 
     def __enter__(self):
@@ -28,16 +30,11 @@ class ThermoInfo(object):
         assert hasattr(self, '_devfile')
         return self._devfile
 
-    @property
-    def temperature(self):
-        assert hasattr(self, '_temp')
-        return self._temp
-
     def open(self):
         try:
             self._fd = open(self.device, 'r')
         except FileNotFoundError as e:
-            self.logger.critical('{} not setuped?'.format(self.device))
+            self.logger.critical(f'{self.device} not setuped?')
 
     def close(self):
         try:
@@ -56,13 +53,11 @@ class ThermoInfo(object):
         caught different crc, read temperature, and return (t/1000 as float, crc).
         """
         crc = self.crc(self._fd.readline())
-        if crc == self._crc:
-            return None
+        if crc == self._prev_crc:
+            return self._prev_temp, crc
         else:
             # update is detected
-            self._temp = self.temp(self._fd.readline())
-            return self.temperature, crc
-        pass
+            return self.temp(self._fd.readline()), crc
 
     def crc(self, text):
         match = re.match(r".*:\scrc=(..)\sYES", text)
@@ -79,3 +74,13 @@ class ThermoInfo(object):
         else:
             self.logger.error('1-wire setup not be correctly.')
             exit(1)
+
+class TempState(Enum):
+    safe = 'safe'
+    too_hot = 'too_hot'
+    too_cold = 'too_cold'
+
+    def match(self, val: str) -> bool:
+        value = TempState(val)
+        assert isinstance(value, TempState)
+        return self == value

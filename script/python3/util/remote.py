@@ -20,7 +20,7 @@ class Remote(object):
         Remote.set_keys(keycodes)
 
     def send_IR_key(self, key, repeat=1):
-        cmd = '%s -#%d SEND_ONCE ledlight %s'%(self._ircmd, repeat, key)
+        cmd = f'{self._ircmd} -#{repeat} SEND_ONCE ledlight {key}'
         # WANTFIX: Why it prints many same lines when logger has been called from sched.run??
         self.logger.info(cmd)
         sp.call(cmd, shell=True)
@@ -32,16 +32,16 @@ class Remote(object):
         failure: { "errors": [{"message": "You sent an invalid key."}] }
         """
         ifttt_path = lambda key: self._ifttt_path.format(endpoint, key)
+        blind_key = ifttt_path('********')
         # WANTFIX: Why it prints many same lines when logger has been called from sched.run??
-        self.logger.info('run {} {} for {}'.format(endpoint, repeat, ifttt_path('********')))
+        self.logger.info(f'run {endpoint} {repeat} for {blind_key}')
         for i in range(repeat):
             res, l = "", 0
-            while l < 3 and res != "Congratulations! You've fired the %s event"%endpoint:
-                self.logger.info('try %d-%d: %s'%(i, l, ifttt_path('********')))
+            while l < 3 and res != f"Congratulations! You've fired the {endpoint} event":
+                self.logger.info(f'try {i}-{l}: {blind_key}')
                 # noneed to use pycurl or requests, thread unsafe on macOS 10.14.
-                res = sp.check_output('{} {}'.format(self.http_cmd, ifttt_path(self._ifttt_key)), shell=True).decode('utf-8')
+                res = sp.check_output(f'{self.http_cmd} {ifttt_path(self._ifttt_key)}', shell=True).decode('utf-8')
                 self.logger.info(res)
-                self.logger.info('command = {} {}'.format(self.http_cmd, ifttt_path(self._ifttt_key)))
                 l += 1
 
     @property
@@ -68,7 +68,7 @@ class Remote(object):
         keys = []
         check = lambda dict, key, default_val: dict[key] if key in dict.keys() else default_val
         for i in range(val['row_max']):
-            keys.append([check(val, '{}_{}'.format(x, y), cls.NOTAVAILABLE) \
+            keys.append([check(val, f'{x}_{y}', cls.NOTAVAILABLE) \
                     for x, y in list(product([i], list(range(val['col_max']))))])
         if not hasattr(cls, '_keys'):
             cls._keys = {val['name'] : keys}
@@ -91,7 +91,7 @@ class RemoteArgs(object):
                     'IFTTT': 'send_HTTP_trigger'}
 
     def __str__(self):
-        return '{}(name: {}, args:{})'.format(__class__.__name__, self.function, self.args)
+        return f'{__class__.__name__}(name: {self.function}, args:{self.args})'
 
     def __init__(self, item):
         self._funcname = item['remote']
@@ -115,5 +115,5 @@ class RemoteArgs(object):
     def do(self, instance):
         assert isinstance(instance, Remote)
         # WANTFIX: Why it prints many same lines when logger has been called from sched.run??
-        print('ran RemoteArgs.do: try to eval Remote.{}{}'.format(self.function, self.args))
-        eval('instance.{}{}'.format(self.function, self.args))
+        print(f'ran RemoteArgs.do: try to eval Remote.{self.function}{self.args}')
+        eval(f'instance.{self.function}{self.args}')

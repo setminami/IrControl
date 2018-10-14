@@ -25,7 +25,7 @@ def display_settings(args):
     iface = ''
     display_types = cmdline.get_display_types()
     if args.display not in display_types['emulator']:
-        iface = 'Interface: {}\n'.format(args.interface)
+        iface = f'Interface: {args.interface}\n'
 
     lib_name = cmdline.get_library_for_display_type(args.display)
     if lib_name is not None:
@@ -34,11 +34,10 @@ def display_settings(args):
         lib_name = lib_version = 'unknown'
 
     import luma.core
-    version = 'luma.{} {} (luma.core {})'.format(
-        lib_name, lib_version, luma.core.__version__)
+    version = f'luma.{lib_name} {lib_version} (luma.core {luma.core.__version__})'
 
-    return 'Version: {}\nDisplay: {}\n{}Dimensions: {} x {}\n{}'.format(
-        version, args.display, iface, args.width, args.height, '-' * 60)
+    return f"Version: {version}\nDisplay: {args.display}\n{iface}Dimensions: \
+                        {args.width} x {args.height}\n{'-' * 60}"
 
 
 def get_device(actual_args=None):
@@ -47,7 +46,7 @@ def get_device(actual_args=None):
     """
     if actual_args is None:
         actual_args = sys.argv[1:]
-    parser = cmdline.create_parser(description='luma.examples arguments')
+    parser = cmdline.create_parser(description='SunlightControl luma display arguments')
     args = parser.parse_args(actual_args)
 
     if args.config:
