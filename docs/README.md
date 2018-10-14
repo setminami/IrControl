@@ -1,5 +1,6 @@
-# IrControl
+# SunlightControl
 construct for raspi ZeroW with lircd
+
 
 ## Motivation
 I wanna simulate sunlight (e.g., SunRise/Set, MoonLight, etc...) with RGB ledlight by time in water plants tank as a sublight.<br>
@@ -21,7 +22,10 @@ The docs are written for use like https://www.led-paradise.com/product/1301.<br>
 Why? Many cheap RGB controller (maybe chinese) have same IR signal, and they are cheaper than wifi or BT's similar products.
 
 #### appearance
-<img src="./img/appearance.png" alt="for examples" width="500">
+<img src="./img/appearance.png" alt="for examples" width="500"></br>
+
+System
+<img src="./img/TokageCam_rev2.png" alt="System" width="500">
 
 ### lircd setup procedure
 #### install

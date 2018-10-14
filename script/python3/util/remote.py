@@ -3,9 +3,9 @@
 
 from itertools import product
 import subprocess as sp
-import requests, time
 
 from util import module_logger, is_debug
+
 
 class Remote(object):
     NOTAVAILABLE = 'NA'
@@ -109,8 +109,18 @@ class RemoteArgs(object):
         return self.devicefuncs[self._funcname]
 
     @property
+    def priority(self):
+        """ priority of the schedule """
+        return 1 if self._funcname == 'IFTTT' else 2
+
+    @property
     def args(self):
         return self._args
+
+    @property
+    def json(self):
+        """ RemoteArgs json schema """
+        return {"funcname": self._funcname, "args": list(self.args)}
 
     def do(self, instance):
         assert isinstance(instance, Remote)

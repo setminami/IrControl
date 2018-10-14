@@ -69,7 +69,7 @@ TEMPERATURE_MANAGER:
           remote: IFTTT
           repeat: 3
   too_cold:
-    temp: 24.0
+    temp: 24.5
     color: '#0033ff'
     reactions:
       up:
