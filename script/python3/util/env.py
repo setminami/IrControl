@@ -2,6 +2,8 @@
 # this made for python3
 
 from os import environ, path
+from datetime import datetime
+from json import dumps
 from enum import Enum
 from PIL import ImageFont
 
@@ -15,8 +17,21 @@ ONEW_DEVICE_PATH = path.normpath('/sys/bus/w1/devices/{}/w1_slave') if not is_de
 
 
 # out of SunlightControl subPrj.
-def schedule_output_path(file_name):
+def output_path(file_name):
     return path.normpath(path.join(path.join(_BASE, '../../../../outputs'), file_name))
+
+
+class DumpFile(Enum):
+    schedule = output_path('schedules.{}.json')
+    live_settings = output_path('livesettings.{}.json')
+
+    def _timestamped_file(self):
+        return self.value.format(datetime.now().strftime('%y%m%dT%H%M%S_%f'))
+
+    def dump_json_file(self, obj):
+        p = self._timestamped_file()
+        with open(self._timestamped_file(), 'w') as f:
+            f.write(dumps(obj))
 
 
 def expand_env(params, verbose=False):
@@ -45,8 +60,10 @@ def expand_env(params, verbose=False):
             _print(f'?? {val} TYPE is {type(val)}', verbose)
     return params
 
+
 def _print(msg, v=False):
     if v: print(msg)
+
 
 class DrawType(Enum):
     CLOCK = 'CLOCK'
@@ -65,6 +82,7 @@ class DrawType(Enum):
                     'Next:', ('#F7FE2E', '#424242'), 'white', '#FE2E2E', 'white', font_small, font_large)
         else:
             return ()
+
 
 class TemperatureUnits(Enum):
     """

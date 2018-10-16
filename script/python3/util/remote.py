@@ -76,10 +76,11 @@ class Remote(object):
             cls._keys[val['name']] = keys
 
     @classmethod
-    def _key_as_point(self, position: str):
+    def _key_as_point(cls, position: str):
         pos = position.split('_')
         assert len(pos) == 2
         return tuple([int(i) for i in pos])
+
 
 class RemoteArgs(object):
     """ To avoid that be useless instances Remote
@@ -87,8 +88,7 @@ class RemoteArgs(object):
             command: * (str)
             repeat: (int)
     """
-    devicefuncs = {'ledlight': 'send_IR_key',
-                    'IFTTT': 'send_HTTP_trigger'}
+    devicefuncs = {'ledlight': 'send_IR_key', 'IFTTT': 'send_HTTP_trigger'}
 
     def __str__(self):
         return f'{__class__.__name__}(name: {self.function}, args:{self.args})'
@@ -124,6 +124,6 @@ class RemoteArgs(object):
 
     def do(self, instance):
         assert isinstance(instance, Remote)
-        # WANTFIX: Why it prints many same lines when logger has been called from sched.run??
+        # WONTFIX: Why it prints many same lines when logger has been called from sched.run??
         print(f'ran RemoteArgs.do: try to eval Remote.{self.function}{self.args}')
         eval(f'instance.{self.function}{self.args}')

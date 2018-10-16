@@ -6,7 +6,7 @@ import os, sys, argparse, yaml, math, time, subprocess as sp
 from threading import Thread, Event
 from datetime import datetime, timedelta
 
-from util.env import expand_env, SETTING, TemperatureUnits, DrawType
+from util.env import expand_env, SETTING, TemperatureUnits, DrawType, DumpFile
 from util.timer import LEDLightDayTimer
 from util.remote import Remote
 from util.weather_info import WeatherInfo
@@ -28,6 +28,7 @@ DEBUG = False
 ENV_DEBUG = False
 
 _SLEEP = 0.5
+
 
 class SunlightControl(Thread):
     """
@@ -133,9 +134,9 @@ class SunlightControl(Thread):
     # operate transferred instance
     def _setup_weather_info(self, day):
         # TODO: check memory usage
-        TIMESHIFTS = 'TIMESHIFTS' if not is_debug() else 'TIMESHIFTS_for_debg'
+        timeshifts = 'TIMESHIFTS' if not is_debug() else 'TIMESHIFTS_for_debg'
         self._timer.weather = WeatherInfo(day, self.PARAMS['SUNLIGHT_STATUS_API'],
-                                                self.PARAMS[TIMESHIFTS],
+                                                self.PARAMS[timeshifts],
                                                 self.PARAMS['TIMEZONE'])
 
     def _scheduling(self):
@@ -151,6 +152,7 @@ class SunlightControl(Thread):
         self.toocold_operations = [too_hot['reactions']['down'], too_cold['reactions']['up']]
         self.toohot_operations = [too_hot['reactions']['up'], too_cold['reactions']['down']]
         self.safetemp_operations = [too_hot['reactions']['down'], too_cold['reactions']['up']]
+        DumpFile.live_settings.dump_json_file(temp_manager)
 
     def is_usedup(self):
         if len(self.active_schedules) == 0:
