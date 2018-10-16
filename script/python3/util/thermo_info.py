@@ -6,6 +6,7 @@ from .env import ONEW_DEVICE_PATH
 from enum import Enum
 import re
 
+
 class ThermoInfo(object):
     """
     call data from 1-wire thermometer
@@ -75,6 +76,7 @@ class ThermoInfo(object):
             self.logger.error('1-wire setup not be correctly.')
             exit(1)
 
+
 class TempState(Enum):
     safe = 'safe'
     too_hot = 'too_hot'
@@ -84,3 +86,4 @@ class TempState(Enum):
         value = TempState(val)
         assert isinstance(value, TempState)
         return self == value
+

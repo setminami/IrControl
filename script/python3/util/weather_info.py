@@ -11,6 +11,7 @@ from util import module_logger
 
 DEBUG = False
 
+
 class WeatherInfo(object):
 
     def __init__(self, day: datetime, setting, schedule, tz):
@@ -50,7 +51,7 @@ class WeatherInfo(object):
     def _recallAPI(self, f):
         if (not hasattr(self, 'fetched_result')) or \
             (hasattr(self, 'fetched_result') and (self.fetched_result is None or \
-            datetime.now() > (self.fetched_result + timedelta(minutes=self.update_min)))):
+                datetime.now() > (self.fetched_result + timedelta(minutes=self.update_min)))):
             f()
         self.logger.debug(f'call {sys._getframe().f_code.co_name} : {self._sunlights}')
 
@@ -111,8 +112,8 @@ class WeatherInfo(object):
 
     # see also. ledlight.yml.TIMESHFTS
     # sunrise-sunset.org
-    ###########################
-    ### ** named times ** ###
+    #################################################################################
+    ###                          named times                                      ###
     @property
     def _sunrise(self): # consider other services fortunely
         self._recallAPI(self.sunlights)
@@ -145,7 +146,7 @@ class WeatherInfo(object):
         self._recallAPI(self.sunlights)
         return (self._convByTZ(self._sunlights['results']['astronomical_twilight_begin']),
                 self._convByTZ(self._sunlights['results']['astronomical_twilight_end']))
-    ##############################################
+    #################################################################################
 
 
     # utility

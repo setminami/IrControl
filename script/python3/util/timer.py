@@ -13,7 +13,8 @@ from multiprocessing import Process
 from util.weather_info import WeatherInfo
 from util.remote import Remote
 from . import module_logger
-from util.env import schedule_output_path
+from util.env import DumpFile
+
 
 class LEDLightDayTimer(object):
     """ a simple day timer """
@@ -35,6 +36,7 @@ class LEDLightDayTimer(object):
     @property
     def weather(self):
         return self._weather
+
     @weather.setter
     def weather(self, val:WeatherInfo):
         self._weather = val
@@ -44,6 +46,7 @@ class LEDLightDayTimer(object):
     def remote(self):
         assert hasattr(self, '_remote')
         return self._remote
+
     @remote.setter
     def remote(self, remote: Remote):
         self._remote = remote
@@ -79,8 +82,7 @@ class LEDLightDayTimer(object):
             if msg == FIRE:
                 # expand __str__
                 [self.logger.info(f'- {o}') for o in val.operations]
-        self.output_schedule(schedule_output_path(now.strftime('%y%m%dT%H%M%S_%f') + '.sch'),
-                             [v.json for v in self._schedules.values()])
+        DumpFile.schedule.dump_json_file([v.json for v in self._schedules.values()])
 
         if not self._sched.empty():
             # just wait in another process, until all schedules were usedup.
@@ -89,10 +91,6 @@ class LEDLightDayTimer(object):
             self._p.start()
             self.logger.info(f'Process @{self._p} {self._p.pid} has (re)started.')
         return self._sched.queue
-
-    def output_schedule(self, path, obj):
-        with open(path, 'w') as f:
-            f.write(dumps(obj))
 
     def _do(self, name, display_info, ops, ins):
         # CONTRACT: name and display_info are only to pass Event id as arg,
