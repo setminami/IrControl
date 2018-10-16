@@ -68,7 +68,7 @@ class LEDLightDayTimer(object):
         for val in self._schedules.values():
             if val.time >= now:
                 msg = FIRE
-                self._sched.enterabs(time.mktime(val.time.timetuple()), 2,
+                self._sched.enterabs(time.mktime(val.time.timetuple()), min([op.priority for op in val.operations]),
                                      self._do, argument=(val.name, val.display_info, val.operations, self.remote))
             else:
                 msg = DISSMISS
@@ -95,7 +95,8 @@ class LEDLightDayTimer(object):
             f.write(dumps(obj))
 
     def _do(self, name, display_info, ops, ins):
-        # name and display_info are only Event id, not effective here
+        # CONTRACT: name and display_info are only to pass Event id as arg,
+        # so not effective in this function but designed to read them from outsiders.
         self.logger.debug(f'&&&&&&&&&&&&& len(ops) = {len(ops)} &&&&&&&&&&&&&&&')
         for op in ops:
             op.do(ins)

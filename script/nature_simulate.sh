@@ -42,7 +42,7 @@ elif [ `uname -s` == 'Linux' ]; then
   REQUIRE=ACTUAL.txt
 fi
 
-pip install -r ${PRJ_PATH}/requirements/$REQUIRE
+# pip install -r ${PRJ_PATH}/requirements/$REQUIRE
 
 if [ -e ${PRJ_PATH} ]; then
   source ${SIMNATURE_PRJ_PATH}/.sunlight_control.env
