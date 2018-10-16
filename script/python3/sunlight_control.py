@@ -107,15 +107,19 @@ class SunlightControl(Thread):
 
     @temp_state.setter
     def temp_state(self, val: TempState):
-        if val != self._temp_state:
+        """ include Heater on/off operation """
+        if val is not self._temp_state:
             if val is TempState.too_hot:
                 assert hasattr(self, 'toohot_operations')
+                self.logger.info(f'*** Over temp thresh hold {self._temp_state.value} -> {val.value} ***')
                 operations = self.toohot_operations
             elif val is TempState.too_cold:
                 assert hasattr(self, 'toocold_operations')
+                self.logger.info(f'*** Under temp thresh hold {self._temp_state.value} -> {val.value} ***')
                 operations = self.toocold_operations
             else:
                 assert hasattr(self, 'safetemp_operations')
+                self.logger.info(f'*** Fits in temp thresh hold {self._temp_state.value} -> {val.value} ***')
                 operations = self.safetemp_operations
             SunlightControl._simple_ifttt_trigger(self.timer.remote, operations)
             self._temp_state = val
