@@ -19,3 +19,9 @@ memory_profiler
 # psutil
 
 requests
+
+# for Tuya devices
+# Under reviewing, because plugs can be controlled state_fully, but To use the API have to handle too many ids.
+# tuyaapi # this module has too many magics or fixed numbers.
+# or
+# pytuya # this module is reversed from tuyaapi

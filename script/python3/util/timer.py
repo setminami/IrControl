@@ -13,7 +13,7 @@ from multiprocessing import Process
 from util.weather_info import WeatherInfo
 from util.remote import Remote
 from . import module_logger
-from util.env import DumpFile
+from util import DumpFile
 
 
 class LEDLightDayTimer(object):

@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 # this made for python3
 
-from . import module_logger, is_debug
-from .env import ONEW_DEVICE_PATH
+from . import module_logger, is_debug, ONEW_DEVICE_PATH
 from enum import Enum
 import re
 

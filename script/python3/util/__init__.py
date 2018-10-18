@@ -1,10 +1,23 @@
 # -*- coding: utf-8 -*-
 # this made for python3
-import logging, os
+import logging
+from os import uname, path
+from enum import Enum
+from json import dumps
+from datetime import datetime
+
 
 def is_debug(sysname='Darwin'):
     """ for device debug """
-    return os.uname().sysname == sysname
+    return uname().sysname == sysname
+
+
+_BASE = path.dirname(path.abspath(__file__))
+# for avoid virtualenv
+SETTING = path.normpath(path.join(_BASE, '../../../settings/ledlight.yml'))
+ONEW_DEVICE_PATH = path.normpath('/sys/bus/w1/devices/{}/w1_slave') if not is_debug() else \
+                    path.normpath(path.join(_BASE, '../../../environment/w1_demo'))
+
 
 def module_logger(modname):
     logger = logging.getLogger(modname)
@@ -15,3 +28,21 @@ def module_logger(modname):
     logger.addHandler(handler)
     logger.setLevel(logging.DEBUG if is_debug() else logging.INFO)
     return logger
+
+
+# out of SunlightControl subPrj.
+def output_path(file_name):
+    return path.normpath(path.join(path.join(_BASE, '../../../../outputs'), file_name))
+
+
+class DumpFile(Enum):
+    schedule = output_path('schedules.{}.json')
+    live_settings = output_path('livesettings.{}.json')
+
+    def _timestamped_file(self):
+        return self.value.format(datetime.now().strftime('%y%m%dT%H%M%S_%f'))
+
+    def dump_json_file(self, obj):
+        p = self._timestamped_file()
+        with open(self._timestamped_file(), 'w') as f:
+            f.write(dumps(obj))

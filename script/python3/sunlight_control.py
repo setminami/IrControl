@@ -5,13 +5,14 @@
 import os, sys, argparse, yaml, math, time, subprocess as sp
 from threading import Thread, Event
 from datetime import datetime, timedelta
+from time import sleep
 
-from util.env import expand_env, SETTING, TemperatureUnits, DrawType, DumpFile
+from util.env import expand_env, TemperatureUnits, DrawType
 from util.timer import LEDLightDayTimer
 from util.remote import Remote
 from util.weather_info import WeatherInfo
 from util.thermo_info import ThermoInfo, TempState
-from util import module_logger, is_debug
+from util import module_logger, is_debug, SETTING, DumpFile
 
 if is_debug():
     print('## the ENV Cannot use luma library ##')
@@ -20,7 +21,6 @@ else:
     from luma.core.render import canvas
     from display.demo_opts import get_device
 
-from time import sleep
 
 __VERSION__ = "1.1.1"
 
@@ -149,8 +149,8 @@ class SunlightControl(Thread):
         too_cold, too_hot = temp_manager['too_cold'], temp_manager['too_hot']
         self.temp_colors = temp_manager['default_color'], too_cold['color'], too_hot['color']
         self.temp_unit = TemperatureUnits(temp_manager['unit'])
-        self.toocold_operations = [too_hot['reactions']['down'], too_cold['reactions']['up']]
-        self.toohot_operations = [too_hot['reactions']['up'], too_cold['reactions']['down']]
+        self.toocold_operations = [too_cold['reactions']['up'], too_cold['reactions']['down']]
+        self.toohot_operations = [too_hot['reactions']['up'], too_hot['reactions']['down']]
         self.safetemp_operations = [too_hot['reactions']['down'], too_cold['reactions']['up']]
         DumpFile.live_settings.dump_json_file(temp_manager)
 
@@ -163,6 +163,7 @@ class SunlightControl(Thread):
 
     def update_settings(self, day):
         """
+        [a for a in act for [act in [acts for acts in operations]]]
         organize yaml settings
         An item which expected realtime update, describe here istead of __init__
         """
@@ -321,34 +322,39 @@ class SunlightControl(Thread):
     def kill(self):
         self.kill_received = True
 
-    @staticmethod
-    def _simple_ifttt_trigger(ins, operations):
-        acts = [a for a in [act for act in [acts for acts in operations]]]
-        [ins.send_HTTP_trigger(c, r) for c, r in [(a[0]['command'], a[0]['repeat']) for a in acts \
-                                                  if a[0]['remote'] is 'IFTTT']]
+    @classmethod
+    def _simple_ifttt_trigger(cls, ins, operations):
+        def as_list(ls, b=True): return [l for l in ls if b]
+        acts = as_list(as_list(as_list(as_list(operations))))
+        for a in acts:
+            x = a[0]
+            command, repeat = x['command'], x['repeat']
+            if x['remote'] == 'IFTTT':
+                ins.send_HTTP_trigger(command, repeat)
 
     @staticmethod
     def ArgParser():
         argParser = argparse.ArgumentParser(prog=__file__,
                                             description='Control ledlight with infra-red remote',
                                             usage='%s -v -c [setting file name by yaml]'%__file__)
-        # Version desctiprtion
-        argParser.add_argument('-v', '--version',
-                                action='version',
-                                version='%s'%__VERSION__)
-        argParser.add_argument('-c', '--configure',
-                                nargs='?', type=str, default=SETTING,
+        # Version description
+        argParser.add_argument('-v', '--version', action='version', version='%s'%__VERSION__)
+        argParser.add_argument('-c', '--configure', nargs='?', type=str, default=SETTING,
                                 help=f'config file that wrote by yaml describe params, see default={SETTING}')
         return argParser.parse_args()
 
 # drawer utilities calculator funcs
+
+
 def posn(angle, arm_length):
     dx = int(math.cos(math.radians(angle)) * arm_length)
     dy = int(math.sin(math.radians(angle)) * arm_length)
     return dx, dy
 
+
 def _circular(r, origin):
     return tuple([x - r for x in origin]), tuple([x + r for x in origin])
+
 
 def _plot_schedule(draw, origin, R, plot_R, R_ratio, schedules):
     """ plot schedules on ellipse """

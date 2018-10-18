@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 # this made for python3
+# If it relate with settings/ledlight.yml selectable item, write in this file,
+# relate with system direct, write in python3/__init__.py
 
 from os import environ, path
 from datetime import datetime
@@ -8,30 +10,6 @@ from enum import Enum
 from PIL import ImageFont
 
 from util import is_debug
-
-_BASE = path.dirname(path.abspath(__file__))
-# for avoid virtualenv
-SETTING = path.normpath(path.join(_BASE, '../../../settings/ledlight.yml'))
-ONEW_DEVICE_PATH = path.normpath('/sys/bus/w1/devices/{}/w1_slave') if not is_debug() else \
-                    path.normpath(path.join(_BASE, '../../../environment/w1_demo'))
-
-
-# out of SunlightControl subPrj.
-def output_path(file_name):
-    return path.normpath(path.join(path.join(_BASE, '../../../../outputs'), file_name))
-
-
-class DumpFile(Enum):
-    schedule = output_path('schedules.{}.json')
-    live_settings = output_path('livesettings.{}.json')
-
-    def _timestamped_file(self):
-        return self.value.format(datetime.now().strftime('%y%m%dT%H%M%S_%f'))
-
-    def dump_json_file(self, obj):
-        p = self._timestamped_file()
-        with open(self._timestamped_file(), 'w') as f:
-            f.write(dumps(obj))
 
 
 def expand_env(params, verbose=False):
@@ -87,10 +65,9 @@ class DrawType(Enum):
 class TemperatureUnits(Enum):
     """
     DS18B20 outputs as Celsius value x 10^3
-    Comversion: 1.8C + 32 = F
+    Conversion formula: 1.8C + 32 = F
     """
-    C = 'Celsius'
-    F = 'Fahrenheit'
+    C, F = 'Celsius', 'Fahrenheit'
 
     def value_with_mark(self, value, adp=1):
         """

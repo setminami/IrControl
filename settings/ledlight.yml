@@ -65,7 +65,7 @@ TEMPERATURE_MANAGER:
           remote: IFTTT
           repeat: 3
       down:
-        - command: coolingfan_off
+        - command: subheater_off
           remote: IFTTT
           repeat: 3
   too_cold:
@@ -73,7 +73,7 @@ TEMPERATURE_MANAGER:
     color: '#0033ff'
     reactions:
       up:
-        - command: subheater_off
+        - command: coolingfan_off
           remote: IFTTT
           repeat: 3
       down:
