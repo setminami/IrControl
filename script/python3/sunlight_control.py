@@ -12,7 +12,7 @@ from util.timer import LEDLightDayTimer
 from util.remote import Remote
 from util.weather_info import WeatherInfo
 from util.thermo_info import ThermoInfo, TempState
-from util import module_logger, is_debug, SETTING, DumpFile
+from util import module_logger, is_debug, SETTING, DumpFile, SmartPlug
 
 if is_debug():
     print('## the ENV Cannot use luma library ##')
@@ -57,15 +57,15 @@ class SunlightControl(Thread):
         timer.timezone = self.PARAMS['TIMEZONE']
         self.remotes = {}
         # restrict update lircd for running
-        irsend, httpcmd = 'echo' if is_debug() \
-            else sp.check_output(['which', self.PARAMS['IRSEND_CMD']]).decode('utf-8')[:-1], \
-            '{} -sl'.format(sp.check_output(['which', 'curl']).decode('utf-8')[:-1])
+        irsend = 'echo' if is_debug() \
+            else sp.check_output(['which', self.PARAMS['IRSEND_CMD']]).decode('utf-8')[:-1]
         ifttt = self.PARAMS['IFTTT']
-        for x in self.PARAMS['KEYCODE']:
-            remote = Remote(irsend, httpcmd, ifttt['path'], ifttt['key'])
+        for x in self.PARAMS['KEY_CODE']:
+            remote = Remote(irsend, ifttt['path'], ifttt['key'])
             remote.setup_ir_keycodes(x)
             self.remotes[x['name']] = remote
         timer.remote = self.remotes['ledlight']
+        timer.remote.smart_plugs = [SmartPlug(p['name']) for p in ifttt['plugs']]
         self._temp_state = TempState('safe')
         self.live_update_params()
         self._timer = timer
@@ -342,6 +342,7 @@ class SunlightControl(Thread):
         argParser.add_argument('-c', '--configure', nargs='?', type=str, default=SETTING,
                                 help=f'config file that wrote by yaml describe params, see default={SETTING}')
         return argParser.parse_args()
+
 
 # drawer utilities calculator funcs
 

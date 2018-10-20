@@ -5,7 +5,7 @@ Connected to pydev debugger (build 182.4505.26)
 ## the ENV Cannot use luma library ##
 try IRSEND_CMD, irsend
 ?? irsend TYPE is <class 'str'>
-try KEYCODE, [{'name': 'ledlight', 'row_max': 6, 'col_max': 4, '0_0': 'on', '0_1': 'off', '0_2': 'down', '0_3': 'up', '1_0': 'white', '1_1': 'b0', '1_3': 'r0', '2_1': 'b1', '2_3': 'r1', '3_1': 'b2', '4_1': 'b3', '5_1': 'b4'}]
+try KEY_CODE, [{'name': 'ledlight', 'row_max': 6, 'col_max': 4, '0_0': 'on', '0_1': 'off', '0_2': 'down', '0_3': 'up', '1_0': 'white', '1_1': 'b0', '1_3': 'r0', '2_1': 'b1', '2_3': 'r1', '3_1': 'b2', '4_1': 'b3', '5_1': 'b4'}]
 LIST
 try name, ledlight
 ?? ledlight TYPE is <class 'str'>
@@ -624,7 +624,7 @@ dummy implementation
 [181002T015852 | SunlightControl | INFO] Schedules set for day: 2018-10-02
 try IRSEND_CMD, irsend
 ?? irsend TYPE is <class 'str'>
-try KEYCODE, [{'name': 'ledlight', 'row_max': 6, 'col_max': 4, '0_0': 'on', '0_1': 'off', '0_2': 'down', '0_3': 'up', '1_0': 'white', '1_1': 'b0', '1_3': 'r0', '2_1': 'b1', '2_3': 'r1', '3_1': 'b2', '4_1': 'b3', '5_1': 'b4'}]
+try KEY_CODE, [{'name': 'ledlight', 'row_max': 6, 'col_max': 4, '0_0': 'on', '0_1': 'off', '0_2': 'down', '0_3': 'up', '1_0': 'white', '1_1': 'b0', '1_3': 'r0', '2_1': 'b1', '2_3': 'r1', '3_1': 'b2', '4_1': 'b3', '5_1': 'b4'}]
 LIST
 try name, ledlight
 ?? ledlight TYPE is <class 'str'>

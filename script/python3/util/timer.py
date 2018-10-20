@@ -3,17 +3,14 @@
 
 import pytz, time
 from datetime import datetime
-
-from json import dumps
 from sched import scheduler
 from multiprocessing import Process
 # sched is not support datetime but time
 # TypeError: unsupported operand type(s) for +: 'datetime.datetime'
 
-from util.weather_info import WeatherInfo
-from util.remote import Remote
-from . import module_logger
-from util import DumpFile
+from .weather_info import WeatherInfo
+from .remote import Remote
+from . import module_logger, DumpFile
 
 
 class LEDLightDayTimer(object):

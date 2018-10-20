@@ -46,3 +46,25 @@ class DumpFile(Enum):
         p = self._timestamped_file()
         with open(self._timestamped_file(), 'w') as f:
             f.write(dumps(obj))
+
+
+# to control semi-state_fully with IFTTT + tuya Device for Smart plugs
+class SmartPlug:
+    """ CONTRACT: IFTTT service name must be {plug_name}_{on|off} """
+
+    def __init__(self, name):
+        self._name = name
+        self._status = self.Status.UNKNOWN
+        pass
+
+    @property
+    def name(self): return self._name
+
+    @property
+    def status(self): return self._status
+
+    @status.setter
+    def status(self, state): self._status = state
+
+    class Status(Enum):
+        ON, OFF, UNKNOWN = 'on', 'off', 'unknown'

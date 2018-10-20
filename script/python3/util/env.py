@@ -9,7 +9,7 @@ from json import dumps
 from enum import Enum
 from PIL import ImageFont
 
-from util import is_debug
+from . import is_debug
 
 
 def expand_env(params, verbose=False):

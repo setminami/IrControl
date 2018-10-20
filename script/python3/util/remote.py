@@ -2,17 +2,16 @@
 # this made for python3
 
 from itertools import product
-import subprocess as sp
+import subprocess as sp, requests
 
-from util import module_logger, is_debug
+from . import module_logger, is_debug, SmartPlug
 
 
 class Remote(object):
     NOTAVAILABLE = 'NA'
 
-    def __init__(self, infrared_cmd, http_cmd, webhook_path, key):
-        self._ircmd, self.http_cmd, self._ifttt_path, self._ifttt_key = \
-                                    infrared_cmd, http_cmd, webhook_path, key
+    def __init__(self, infrared_cmd, webhook_path, key):
+        self._ircmd, self._ifttt_path, self._ifttt_key = infrared_cmd, webhook_path, key
         self.logger = module_logger(__name__)
 
     def setup_ir_keycodes(self, keycodes):
@@ -35,14 +34,27 @@ class Remote(object):
         blind_key = ifttt_path('********')
         # WONTFIX: Why it prints many same lines when logger has been called from sched.run??
         self.logger.info(f'run {endpoint} {repeat} for {blind_key}')
-        for i in range(repeat):
-            res, l = "", 0
-            while l < 3 and res != f"Congratulations! You've fired the {endpoint} event":
-                self.logger.info(f'try {i}-{l}: {blind_key}')
-                # noneed to use pycurl or requests, thread unsafe on macOS 10.14.
-                res = sp.check_output(f'{self.http_cmd} {ifttt_path(self._ifttt_key)}', shell=True).decode('utf-8')
-                self.logger.info(res)
-                l += 1
+        assert hasattr(self, '_smart_plugs')
+        if self.get_smart_plug_state(endpoint).value != endpoint.split('_')[1]:
+            response_codes = []
+            for i in range(repeat):
+                try_time = 0
+                while try_time < 3:
+                    self.logger.info(f'try {i}-{try_time}: {blind_key}')
+                    # no need to use pycurl or requests, thread unsafe on macOS 10.14.
+                    res = requests.get(ifttt_path(self._ifttt_key))
+                    # sp.check_output(f'{self.http_cmd} {ifttt_path(self._ifttt_key)}', shell=True).decode('utf-8')
+                    self.logger.info(res)
+                    if res.status_code == 200:
+                        self.set_smart_plug_state(endpoint)
+                        break
+                    try_time += 1
+                    response_codes.append(res.status_code)
+            self.logger.info(response_codes)
+            if 200 in response_codes:
+                self.logger.info(f'Success {response_codes.count(200)} times')
+            else:
+                self.logger.error(f'All IFTTT Access Failure!')
 
     @property
     def name(self): return self._name
@@ -50,11 +62,32 @@ class Remote(object):
     @name.setter
     def name(self, val): self._name = val
 
+    @property
+    def smart_plugs(self):
+        assert hasattr(self, '_smart_plugs')
+        assert isinstance(self._smart_plugs, dict)
+        return self._smart_plugs
+    @smart_plugs.setter
+    def smart_plugs(self, vals: list):
+        self._smart_plugs = {v.name: v for v in vals}
+
+    def get_smart_plug_state(self, service_name: str):
+        plug_name, _ = service_name.split('_')
+        try:
+            return self.smart_plugs[plug_name].status
+        except KeyError:
+            self.logger.error(f'The plug name not Found!: {plug_name} in {service_name}')
+
+    def set_smart_plug_state(self, service_name: str):
+        plug_name, status = service_name.split('_')
+        assert isinstance(status, str)
+        self.smart_plugs[plug_name].status = SmartPlug.Status(status)
+
     @classmethod
     def keys(cls, name, position: tuple):
         """ key must be given by 2x2 list """
         assert len(position) == 2
-        row, col  = position
+        row, col = position
         assert isinstance(row, int) and isinstance(col, int)
         my_remote = cls._keys[name]
         return my_remote[row][col]
@@ -63,7 +96,7 @@ class Remote(object):
     def set_keys(cls, val):
         """
         _keys must be constructed as 2x2 list.
-        see also. KEYCODE  0_0, 0_1, .... in yaml
+        see also. KEY_CODE  0_0, 0_1, .... in yaml
         """
         keys = []
         check = lambda dict, key, default_val: dict[key] if key in dict.keys() else default_val
@@ -71,7 +104,7 @@ class Remote(object):
             keys.append([check(val, f'{x}_{y}', cls.NOTAVAILABLE) \
                     for x, y in list(product([i], list(range(val['col_max']))))])
         if not hasattr(cls, '_keys'):
-            cls._keys = {val['name'] : keys}
+            cls._keys = {val['name']: keys}
         else:
             cls._keys[val['name']] = keys
 
@@ -83,7 +116,9 @@ class Remote(object):
 
 
 class RemoteArgs(object):
-    """ To avoid that be useless instances Remote
+    """
+    Like as The device command's preprocessor
+    To avoid that be useless instances Remote
           - remote: ledlight | IFTTT (str)
             command: * (str)
             repeat: (int)
