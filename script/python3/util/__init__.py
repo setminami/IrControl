@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # this made for python3
-import logging
-from os import uname, path
+import logging, pytz
+from os import uname, path, rename
 from enum import Enum
 from json import dumps
 from datetime import datetime
@@ -30,21 +30,34 @@ def module_logger(modname):
     return logger
 
 
+logger = module_logger('sunlight_control')
+
+
 # out of SunlightControl subPrj.
 def output_path(file_name):
     return path.normpath(path.join(path.join(_BASE, '../../../../outputs'), file_name))
 
 
 class DumpFile(Enum):
-    schedule = output_path('schedules.{}.json')
-    live_settings = output_path('livesettings.{}.json')
+    schedule = output_path('schedules.json')
+    live_settings = output_path('livesettings.json')
 
     def _timestamped_file(self):
-        return self.value.format(datetime.now().strftime('%y%m%dT%H%M%S_%f'))
+        return self.value.replace('.json', datetime.now(pytz.utc).strftime('%y%m%dT%H%M%S_%f%Z') + '.json')
 
     def dump_json_file(self, obj):
-        p = self._timestamped_file()
-        with open(self._timestamped_file(), 'w') as f:
+        ts = datetime.now(pytz.utc).strftime('%Y-%m-%dT%H:%M:%S.%f%z')
+        key = 'timestamp'
+        if isinstance(obj, list):
+            obj.append({key: ts})
+        elif isinstance(obj, dict):
+            obj[key] = ts
+        else:
+            assert True, f'Unknown obj has encountered {obj}'
+
+        if path.exists(self.value):
+            rename(self.value, self._timestamped_file())
+        with open(self.value, 'w') as f:
             f.write(dumps(obj))
 
 

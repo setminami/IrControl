@@ -12,7 +12,7 @@ from util.timer import LEDLightDayTimer
 from util.remote import Remote
 from util.weather_info import WeatherInfo
 from util.thermo_info import ThermoInfo, TempState
-from util import module_logger, is_debug, SETTING, DumpFile, SmartPlug
+from util import logger, is_debug, SETTING, DumpFile, SmartPlug
 
 if is_debug():
     print('## the ENV Cannot use luma library ##')
@@ -29,6 +29,8 @@ ENV_DEBUG = False
 
 _SLEEP = 0.5
 
+TIME_ZONE = None
+
 
 class SunlightControl(Thread):
     """
@@ -36,7 +38,7 @@ class SunlightControl(Thread):
     """
     def __init__(self, timer, per_sec, setting=None):
         self.__version__ = __VERSION__
-        self.logger = module_logger(__class__.__name__)
+        self.logger = logger.getChild(__class__.__name__)
         if __name__ == '__main__':
             self.ARGS = SunlightControl.ArgParser()
             self.config_path = self.ARGS.configure
@@ -55,6 +57,7 @@ class SunlightControl(Thread):
         self._device = get_device(opts)
         self._per_sec = per_sec  # to check every /sec
         timer.timezone = self.PARAMS['TIMEZONE']
+        TIME_ZONE = timer.timezone
         self.remotes = {}
         # restrict update lircd for running
         irsend = 'echo' if is_debug() \

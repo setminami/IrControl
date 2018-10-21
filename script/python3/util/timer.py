@@ -10,7 +10,7 @@ from multiprocessing import Process
 
 from .weather_info import WeatherInfo
 from .remote import Remote
-from . import module_logger, DumpFile
+from . import logger, DumpFile
 
 
 class LEDLightDayTimer(object):
@@ -18,7 +18,7 @@ class LEDLightDayTimer(object):
 
     def __init__(self):
         self._sched = scheduler(time.time, time.sleep)
-        self.logger = module_logger(__name__)
+        self.logger = logger.getChild(__name__)
 
     @property
     def timezone(self):

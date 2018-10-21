@@ -2,9 +2,14 @@
 # this made for python3
 
 from itertools import product
-import subprocess as sp, requests
+import subprocess as sp
+import requests, http.client
 
-from . import module_logger, is_debug, SmartPlug
+from . import logger, is_debug, SmartPlug
+
+# donot output barer IFTTT Key
+http.client.HTTPConnection.debuglevel = 0
+http.client.HTTPSConnection.debuglevel = 0
 
 
 class Remote(object):
@@ -12,7 +17,7 @@ class Remote(object):
 
     def __init__(self, infrared_cmd, webhook_path, key):
         self._ircmd, self._ifttt_path, self._ifttt_key = infrared_cmd, webhook_path, key
-        self.logger = module_logger(__name__)
+        self.logger = logger.getChild(__name__)
 
     def setup_ir_keycodes(self, keycodes):
         self.name = keycodes['name']
@@ -36,25 +41,20 @@ class Remote(object):
         self.logger.info(f'run {endpoint} {repeat} for {blind_key}')
         assert hasattr(self, '_smart_plugs')
         if self.get_smart_plug_state(endpoint).value != endpoint.split('_')[1]:
-            response_codes = []
+            response = None
             for i in range(repeat):
                 try_time = 0
                 while try_time < 3:
                     self.logger.info(f'try {i}-{try_time}: {blind_key}')
-                    # no need to use pycurl or requests, thread unsafe on macOS 10.14.
-                    res = requests.get(ifttt_path(self._ifttt_key))
-                    # sp.check_output(f'{self.http_cmd} {ifttt_path(self._ifttt_key)}', shell=True).decode('utf-8')
+                    response = requests.get(ifttt_path(self._ifttt_key))
                     self.logger.info(res)
-                    if res.status_code == 200:
+                    if response.status_code == 200:
                         self.set_smart_plug_state(endpoint)
                         break
                     try_time += 1
-                    response_codes.append(res.status_code)
-            self.logger.info(response_codes)
-            if 200 in response_codes:
-                self.logger.info(f'Success {response_codes.count(200)} times')
-            else:
-                self.logger.error(f'All IFTTT Access Failure!')
+                if response.status_code == 200:
+                    # ignore left trial
+                    break
 
     @property
     def name(self): return self._name
@@ -136,7 +136,7 @@ class RemoteArgs(object):
         else:
             item1 = item['command']
         self._args = (item1, item['repeat'])
-        self.logger = module_logger(__name__)
+        self.logger = logger.getChild(__name__)
 
     @property
     def function(self):

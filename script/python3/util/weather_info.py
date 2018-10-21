@@ -6,7 +6,7 @@ import traceback, time
 from datetime import datetime, timedelta
 
 from .schedule import Schedule
-from . import module_logger
+from . import logger
 
 DEBUG = False
 
@@ -19,7 +19,7 @@ class WeatherInfo(object):
         self.TZ = pytz.timezone(tz)
         self.TIMESHIFTS = schedule # TIMESHIFTS in yaml
         self._day = day
-        self.logger = module_logger(__name__)
+        self.logger = logger.getChild(__name__)
 
     def sunlights(self):
         lat, lng, today = self.PARAMS['latitude'], self.PARAMS['longitude'], self._day.strftime('%Y-%m-%d')

@@ -6,7 +6,7 @@ PYVERSION=3.7
 PRJ_PATH=${SIMNATURE_PRJ_PATH}/${PRJ_NAME}
 DEFAULT_VENV_NAME=SIM_Nature
 LOG_DIR=${SIMNATURE_PRJ_PATH}/log
-LOG_FILE=${LOG_DIR}/SunLight.log
+LOG_FILE=${LOG_DIR}/SunLight.txt
 
 if [ -s $LOG_FILE ]; then
   pip freeze >> ${LOG_FILE}

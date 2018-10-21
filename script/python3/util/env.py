@@ -3,9 +3,7 @@
 # If it relate with settings/ledlight.yml selectable item, write in this file,
 # relate with system direct, write in python3/__init__.py
 
-from os import environ, path
-from datetime import datetime
-from json import dumps
+from os import environ
 from enum import Enum
 from PIL import ImageFont
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # this made for python3
 
-from . import module_logger, is_debug, ONEW_DEVICE_PATH
+from . import logger, is_debug, ONEW_DEVICE_PATH
 from enum import Enum
 import re
 
@@ -16,7 +16,7 @@ class ThermoInfo(object):
         self._devfile = self.device_path.format(rom_code) \
                             if not is_debug() else self.device_path
         self._prev_temp, self._prev_crc = prev
-        self.logger = module_logger(__class__.__name__)
+        self.logger = logger.getChild(__name__)
 
     def __enter__(self):
         self.open()
