@@ -1,12 +1,6 @@
-pytz
-python-dateutil
-pyyaml
+-r ./BASIC.txt
 
-# screen utility
-Pillow
-pygame
-luma.core
-
+# for macOS
 # next 2 modules need not in old luma
 # raspi implemented oled,
 # luma.oled
@@ -14,11 +8,7 @@ luma.core
 luma.emulator
 
 # Profilers for PyCharm
-memory_profiler
 snakeviz
 cprofilev
 psutil
-
-# Networks
-requests
 

@@ -5,7 +5,9 @@ from itertools import product
 import subprocess as sp
 import requests, http.client
 
-from . import logger, is_debug, SmartPlug
+from . import logger, is_debug
+from .device import SmartPlug
+
 
 # donot output barer IFTTT Key
 http.client.HTTPConnection.debuglevel = 0
@@ -47,7 +49,7 @@ class Remote(object):
                 while try_time < 3:
                     self.logger.info(f'try {i}-{try_time}: {blind_key}')
                     response = requests.get(ifttt_path(self._ifttt_key))
-                    self.logger.info(res)
+                    self.logger.info(response)
                     if response.status_code == 200:
                         self.set_smart_plug_state(endpoint)
                         break

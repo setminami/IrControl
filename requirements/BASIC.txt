@@ -1,0 +1,17 @@
+pytz
+python-dateutil
+pyyaml
+
+# screen utility
+Pillow
+pygame
+luma.core
+
+# profiler for DEBUG
+memory_profiler
+
+# Networks
+requests
+
+# additional logging
+python-json-logger

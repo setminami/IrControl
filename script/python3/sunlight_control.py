@@ -12,7 +12,8 @@ from util.timer import LEDLightDayTimer
 from util.remote import Remote
 from util.weather_info import WeatherInfo
 from util.thermo_info import ThermoInfo, TempState
-from util import logger, is_debug, SETTING, DumpFile, SmartPlug
+from util import logger, is_debug, SETTING, DumpFile
+from util.device import SmartPlug
 
 if is_debug():
     print('## the ENV Cannot use luma library ##')

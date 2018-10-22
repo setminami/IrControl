@@ -1,27 +1,8 @@
-pytz
-python-dateutil
-pyyaml
+-r ./BASIC.txt
 
-Pillow
-pygame
-luma.core
-
+# for raspibian
 # next 2 modules need not in old luma
 # raspi implemented oled,
 luma.oled
 # macOS preffer to install emulator, but raspi not need
 # luma.emulator
-
-# Profilers
-memory_profiler
-# snakeviz
-# cprofilev
-# psutil
-
-requests
-
-# for Tuya devices
-# Under reviewing, because plugs can be controlled state_fully, but To use the API have to handle too many ids.
-# tuyaapi # this module has too many magics or fixed numbers.
-# or
-# pytuya # this module is reversed from tuyaapi

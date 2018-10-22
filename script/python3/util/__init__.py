@@ -5,6 +5,7 @@ from os import uname, path, rename
 from enum import Enum
 from json import dumps
 from datetime import datetime
+from pythonjsonlogger import jsonlogger
 
 
 def is_debug(sysname='Darwin'):
@@ -14,20 +15,24 @@ def is_debug(sysname='Darwin'):
 
 _BASE = path.dirname(path.abspath(__file__))
 # for avoid virtualenv
-SETTING = path.normpath(path.join(_BASE, '../../../settings/ledlight.yml'))
+SETTING = path.normpath(path.join(_BASE, '../../../config/ledlight.yml'))
 ONEW_DEVICE_PATH = path.normpath('/sys/bus/w1/devices/{}/w1_slave') if not is_debug() else \
                     path.normpath(path.join(_BASE, '../../../environment/w1_demo'))
+JSON_LOGGING_PATH = path.normpath(path.join(_BASE, '../../../../log/SunLight.json'))
 
 
 def module_logger(modname):
-    logger = logging.getLogger(modname)
+    log = logging.getLogger(modname)
     handler = logging.StreamHandler()
-    formatter = logging.Formatter('[%(asctime)s | %(name)s | %(levelname)s] %(message)s',
-                                    datefmt='%y%m%dT%H%M%S')
+    json_handler = logging.FileHandler(JSON_LOGGING_PATH)
+    formatter = logging.Formatter('[%(asctime)s | %(name)s | %(levelname)s] %(message)s', datefmt='%y%m%dT%H%M%S')
     handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    logger.setLevel(logging.DEBUG if is_debug() else logging.INFO)
-    return logger
+    json_formatter = jsonlogger.JsonFormatter()
+    json_handler.setFormatter(json_formatter)
+    log.addHandler(handler)
+    log.addHandler(json_handler)
+    log.setLevel(logging.DEBUG if is_debug() else logging.INFO)
+    return log
 
 
 logger = module_logger('sunlight_control')
@@ -59,25 +64,3 @@ class DumpFile(Enum):
             rename(self.value, self._timestamped_file())
         with open(self.value, 'w') as f:
             f.write(dumps(obj))
-
-
-# to control semi-state_fully with IFTTT + tuya Device for Smart plugs
-class SmartPlug:
-    """ CONTRACT: IFTTT service name must be {plug_name}_{on|off} """
-
-    def __init__(self, name):
-        self._name = name
-        self._status = self.Status.UNKNOWN
-        pass
-
-    @property
-    def name(self): return self._name
-
-    @property
-    def status(self): return self._status
-
-    @status.setter
-    def status(self, state): self._status = state
-
-    class Status(Enum):
-        ON, OFF, UNKNOWN = 'on', 'off', 'unknown'
