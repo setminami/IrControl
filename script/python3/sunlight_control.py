@@ -39,7 +39,11 @@ class SunlightControl(Thread):
     """
     def __init__(self, timer, per_sec, setting=None):
         self.__version__ = __VERSION__
+        pre_msg = f'initialize {__class__.__name__}'
+        print(pre_msg)
+        logger.debug(pre_msg)
         self.logger = logger.getChild(__class__.__name__)
+        self.logger.debug('setuped child logger')
         if __name__ == '__main__':
             self.ARGS = SunlightControl.ArgParser()
             self.config_path = self.ARGS.configure
@@ -389,6 +393,7 @@ def _plot_on_circle(origin, R, plot_R, time):
     # here, axis origin is left-up, -> Oy - Rcos...
     return _circular(plot_R, (Ox + math.sin(passed_min) * R, Oy - math.cos(passed_min) * R))
 
+
 # @profile
 def main():
     """ for memory_profile """
@@ -402,5 +407,8 @@ def main():
         print('Caught KeyboardInterrupt. schedules were cancelled.')
         exit(0)
 
+
 if __name__ == '__main__':
+    print('startup now!')
+    logger.debug('startup now!')
     main()

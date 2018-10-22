@@ -57,8 +57,10 @@ pip list --outdated >> ${BOOT_LOG_FILE}
 echo `date "+%Y/%m/%d %H:%M:%S"`: OK startup ${PRJ_NAME}. >> ${BOOT_LOG_FILE}
 
 if [ -e ${PRJ_PATH} ]; then
+  echo `date "+%Y/%m/%d %H:%M:%S"`: OK startup ${PRJ_NAME}. >> ${LOG_FILE}
   source ${SIMNATURE_PRJ_PATH}/.sunlight_control.env
-  ${PRJ_PATH}/script/python3/sunlight_control.py > ${LOG_FILE} 2>&1
+  echo `date "+%Y/%m/%d %H:%M:%S"`: env file read done. \(${SIMNATURE_PRJ_PATH}/.sunlight_control.env\) >> ${LOG_FILE}
+  ${PRJ_PATH}/script/python3/sunlight_control.py >> ${LOG_FILE} 2>&1
 else
   echo ${PRJ_PATH} Couldnt find a project location. >> ${BOOT_LOG_FILE}
 fi
