@@ -13,13 +13,13 @@ BOOT_LOG_FILE=${LOG_DIR}/boot.txt
 # save previous sessions like rotate
 DATE_STR=`date "+%Y%m%d-%H%M%S%Z"`
 if [ -s ${LOG_FILE} ]; then
-  pip freeze >> ${LOG_FILE}
   mv ${LOG_FILE} ${LOG_DIR}/${DATE_STR}.sunlight.log
 fi
 
 if [ -s ${BOOT_LOG_FILE} ]; then
   # see also. environment/crontab_sample.txt
   mv ${BOOT_LOG_FILE} ${LOG_DIR}/${DATE_STR}.boot.log
+  echo `date "+%Y/%m/%d %H:%M:%S"`: start bootup. > ${BOOT_LOG_FILE}
 fi
 
 # check & run virtualenv
@@ -34,13 +34,13 @@ export WORKON_HOME=~/.virtualenvs
 
 # start virtualenv with wrapper
 source ${WORKON_HOME}/${WORK_ENV}/bin/activate
-
 if [ $? -eq 0 ]; then
     echo "Success activate" ${WORK_ENV} >> ${BOOT_LOG_FILE}
 else
     echo "Failure activate" ${WORK_ENV} >> ${BOOT_LOG_FILE}
 fi
 
+date "+%Y/%m/%d %H:%M:%S" >> ${BOOT_LOG_FILE}
 export PYTHONPATH=${RUNNABLE_PREFIX}/lib/python${PYVERSION}:${PRJ_PATH}/script/python3
 
 # Darwin is develop environment, else is full wired IoT machine
@@ -53,7 +53,8 @@ elif [ `uname -s` == 'Linux' ]; then
   REQUIRE=ACTUAL.txt
 fi
 
-pip install -r ${PRJ_PATH}/requirements/${REQUIRE} >> ${BOOT_LOG_FILE} 2>&1
+pip list --outdated >> ${BOOT_LOG_FILE}
+echo `date "+%Y/%m/%d %H:%M:%S"`: OK startup ${PRJ_NAME}. >> ${BOOT_LOG_FILE}
 
 if [ -e ${PRJ_PATH} ]; then
   source ${SIMNATURE_PRJ_PATH}/.sunlight_control.env
