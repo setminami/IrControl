@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 # this made for python3
 
-import os, sys, argparse, yaml, math, time, subprocess as sp
-from threading import Thread, Event
+import argparse, yaml, math, subprocess as sp
+from threading import Thread
 from datetime import datetime, timedelta
 from time import sleep
 
 from util import logger, is_debug, SETTING
-from util.logger import module_logger
 from util.env import expand_env, TemperatureUnits, DrawType
 from util.timer import LEDLightDayTimer
 from util.remote import Remote
@@ -32,8 +31,6 @@ ENV_DEBUG = False
 
 _SLEEP = 0.5
 
-TIME_ZONE = None
-
 
 class SunlightControl(Thread):
     """
@@ -44,8 +41,7 @@ class SunlightControl(Thread):
         pre_msg = f'initialize {__class__.__name__}'
         print(pre_msg)
         logger.debug(pre_msg)
-        self.logger = logger.getChild(__class__.__name__)
-        self.logger.debug('setuped child logger')
+
         if __name__ == '__main__':
             self.ARGS = SunlightControl.ArgParser()
             self.config_path = self.ARGS.configure
@@ -55,6 +51,9 @@ class SunlightControl(Thread):
 
         with open(self.config_path, "r") as f:
             self.PARAMS = expand_env(yaml.load(f), ENV_DEBUG)
+
+        self.logger = logger.getChild(__class__.__name__)
+        logger.debug('setuped child logger')
         ds = self.PARAMS['DISPLAY']['hardware_opts'].items()
         opts = []
         for opt, v in ds:
@@ -64,7 +63,6 @@ class SunlightControl(Thread):
         self._device = get_device(opts)
         self._per_sec = per_sec  # to check every /sec
         timer.timezone = self.PARAMS['TIMEZONE']
-        TIME_ZONE = timer.timezone
         self.remotes = {}
         # restrict update lircd for running
         irsend = 'echo' if is_debug() \
