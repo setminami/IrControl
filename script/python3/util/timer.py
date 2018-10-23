@@ -10,7 +10,8 @@ from multiprocessing import Process
 
 from .weather_info import WeatherInfo
 from .remote import Remote
-from . import logger, DumpFile
+from .dump import DumpFile
+from . import logger
 
 
 class LEDLightDayTimer(object):

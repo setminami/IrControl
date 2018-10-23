@@ -5,7 +5,7 @@ from itertools import product
 import subprocess as sp
 import requests, http.client
 
-from . import logger, is_debug
+from . import logger
 from .device import SmartPlug
 
 

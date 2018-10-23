@@ -7,12 +7,14 @@ from threading import Thread, Event
 from datetime import datetime, timedelta
 from time import sleep
 
+from util import logger, is_debug, SETTING
+from util.logger import module_logger
 from util.env import expand_env, TemperatureUnits, DrawType
 from util.timer import LEDLightDayTimer
 from util.remote import Remote
 from util.weather_info import WeatherInfo
 from util.thermo_info import ThermoInfo, TempState
-from util import logger, is_debug, SETTING, DumpFile
+from util.dump import DumpFile
 from util.device import SmartPlug
 
 if is_debug():
