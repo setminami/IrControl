@@ -7,7 +7,7 @@ from threading import Thread
 from datetime import datetime, timedelta
 from time import sleep
 
-from util import logger, is_debug, SETTING
+from util import logger, is_debug, SETTING, JSON_LOGGING_PATH
 from util.env import expand_env, TemperatureUnits, DrawType
 from util.timer import LEDLightDayTimer
 from util.remote import Remote
@@ -45,6 +45,7 @@ class SunlightControl(Thread):
         if __name__ == '__main__':
             self.ARGS = SunlightControl.ArgParser()
             self.config_path = self.ARGS.configure
+            self.logging_path = self.ARGS.logfile
         else:
             assert setting is not None
             self.config_path = setting
@@ -349,6 +350,8 @@ class SunlightControl(Thread):
         argParser.add_argument('-v', '--version', action='version', version='%s'%__VERSION__)
         argParser.add_argument('-c', '--configure', nargs='?', type=str, default=SETTING,
                                 help=f'config file that wrote by yaml describe params, see default={SETTING}')
+        argParser.add_argument('-l', '--logfile', nargs='?', type=str, default=JSON_LOGGING_PATH,
+                               help=f'logging file name as json described, see default={JSON_LOGGING_PATH}')
         return argParser.parse_args()
 
 
