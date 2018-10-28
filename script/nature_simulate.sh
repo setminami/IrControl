@@ -14,7 +14,18 @@ DATE_STR=`date "+%Y%m%d-%H%M%S%Z"`
 if [ -s ${LOG_JSON} ]; then
   # see also. environment/crontab_sample.txt
   mv ${LOG_JSON} ${LOG_DIR}/${DATE_STR}.sunlight.log
-  echo '[{"note": "The JSON records have a lack of syntax last ]. Client must complement to read correctly as a contract."},' > ${LOG_JSON}
+  # SunlightControl log like below
+  # logging.Formatter('{"timestamp": {"time": "%(asctime)s", "msecs": %(msecs)d}}, ' +
+  #                                    '"loglevel": "%(levelname)s", "message": "%(message)s", ' +
+  #                                    '"caller": {"call_from": "%(name)s.%(funcName)s()", ' +
+  #                                    '"file": "%(filename)s", "line_no": "%(lineno)s"}, ' +
+  #                                    '"runtime": {"process_id": %(process)d, "thread_name": "%(threadName)s", ' +
+  #                                    '"thread_id": %(thread)d}},',
+  #                                    datefmt='%Y-%m-%d %H:%M:%S%z')
+  echo -n '[{"note":'  > ${LOG_JSON}
+  echo -n '"The JSON records have a lack of syntax last ]. Client must complement to read correctly as a contract.",'  >> ${LOG_JSON}
+  echo -n '"timestamp": {"time": "`date "+%Y-%m-%d %H:%M:%S%z"`", "msecs": 0},'  >> ${LOG_JSON}
+  echo '"caller": {"call_from": "$0"}, "message": "OK Startup"},'  >> ${LOG_JSON}
 fi
 
 if [ -s ${BOOT_LOG_FILE} ]; then
