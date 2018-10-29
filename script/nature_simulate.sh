@@ -6,14 +6,26 @@ PYVERSION=3.7
 PRJ_PATH=${SIMNATURE_PRJ_PATH}/${PRJ_NAME}
 DEFAULT_VENV_NAME=SIM_Nature
 LOG_DIR=${SIMNATURE_PRJ_PATH}/log
-LOG_FILE=${LOG_DIR}/SunLight.txt
 LOG_JSON=${LOG_DIR}/SunLight.json
 BOOT_LOG_FILE=${LOG_DIR}/boot.txt
 
 # save previous sessions like rotate
 DATE_STR=`date "+%Y%m%d-%H%M%S%Z"`
-if [ -s ${LOG_FILE} ]; then
-  mv ${LOG_FILE} ${LOG_DIR}/${DATE_STR}.sunlight.log
+if [ -s ${LOG_JSON} ]; then
+  # see also. environment/crontab_sample.txt
+  mv ${LOG_JSON} ${LOG_DIR}/${DATE_STR}.sunlight.log
+  # SunlightControl log like below
+  # logging.Formatter('{"timestamp": {"time": "%(asctime)s", "msecs": %(msecs)d}}, ' +
+  #                                    '"loglevel": "%(levelname)s", "message": "%(message)s", ' +
+  #                                    '"caller": {"call_from": "%(name)s.%(funcName)s()", ' +
+  #                                    '"file": "%(filename)s", "line_no": "%(lineno)s"}, ' +
+  #                                    '"runtime": {"process_id": %(process)d, "thread_name": "%(threadName)s", ' +
+  #                                    '"thread_id": %(thread)d}},',
+  #                                    datefmt='%Y-%m-%d %H:%M:%S%z')
+  echo -n '[{"note":'  > ${LOG_JSON}
+  echo -n '"The JSON records have a lack of syntax last ]. Client must complement to read correctly as a contract.",'  >> ${LOG_JSON}
+  echo -n '"timestamp": {"time": "`date "+%Y-%m-%d %H:%M:%S%z"`", "msecs": 0},'  >> ${LOG_JSON}
+  echo '"caller": {"call_from": "$0"}, "message": "OK Startup"},'  >> ${LOG_JSON}
 fi
 
 if [ -s ${BOOT_LOG_FILE} ]; then
@@ -57,12 +69,11 @@ pip list --outdated >> ${BOOT_LOG_FILE}
 echo `date "+%Y/%m/%d %H:%M:%S"`: OK startup ${PRJ_NAME}. >> ${BOOT_LOG_FILE}
 
 if [ -e ${PRJ_PATH} ]; then
-  echo `date "+%Y/%m/%d %H:%M:%S"`: OK startup ${PRJ_NAME}. >> ${LOG_FILE}
   source ${SIMNATURE_PRJ_PATH}/.sunlight_control.env
-  echo `date "+%Y/%m/%d %H:%M:%S"`: env file read done. \(${SIMNATURE_PRJ_PATH}/.sunlight_control.env\) >> ${LOG_FILE}
-  ${PRJ_PATH}/script/python3/sunlight_control.py >> ${LOG_FILE} 2>&1
+  ${PRJ_PATH}/script/python3/sunlight_control.py -l ${LOG_JSON}
 else
   echo ${PRJ_PATH} Couldnt find a project location. >> ${BOOT_LOG_FILE}
 fi
 
+echo ']' >>${LOG_JSON}
 deactivate

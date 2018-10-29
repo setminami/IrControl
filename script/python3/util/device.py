@@ -79,7 +79,11 @@ class OneWire(object):
             return self._prev_temp, crc
         else:
             # update is detected
-            return self.temp(self._fd.readline()), crc
+            return self.dev_depends_f(self._fd.readline()), crc
+
+    def dev_depends_f(self, *args):
+        """ Children must impl"""
+        assert True, f'Not Impl Concrete function {args}'
 
     def crc(self, text):
         match = re.match(r".*:\scrc=(..)\sYES", text)

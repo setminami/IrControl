@@ -5,9 +5,9 @@
 import argparse, yaml, math, subprocess as sp
 from threading import Thread
 from datetime import datetime, timedelta
-from time import sleep
+from time import sleep, time
 
-from util import logger, is_debug, SETTING
+from util import logger, is_debug, SETTING, JSON_LOGGING_PATH
 from util.env import expand_env, TemperatureUnits, DrawType
 from util.timer import LEDLightDayTimer
 from util.remote import Remote
@@ -45,6 +45,7 @@ class SunlightControl(Thread):
         if __name__ == '__main__':
             self.ARGS = SunlightControl.ArgParser()
             self.config_path = self.ARGS.configure
+            self.logging_path = self.ARGS.logfile
         else:
             assert setting is not None
             self.config_path = setting
@@ -153,6 +154,7 @@ class SunlightControl(Thread):
     # util
     def live_update_params(self):
         temp_manager = self.PARAMS['TEMPERATURE_MANAGER']
+        self.check_poll = temp_manager['polling']
         self.temp_sh = temp_manager['too_cold']['temp'], temp_manager['too_hot']['temp']
         too_cold, too_hot = temp_manager['too_cold'], temp_manager['too_hot']
         self.temp_colors = temp_manager['default_color'], too_cold['color'], too_hot['color']
@@ -218,7 +220,7 @@ class SunlightControl(Thread):
 
         self.logger.debug(f'check {self}')
         # Debug
-        display_name, dateform, timeform, sch_len = "", "", "", 0
+        display_name, dateform, timeform, sch_len, temp_checked = "", "", "", 0, 0
 
         while not self.kill_received:
             if DEBUG:
@@ -240,12 +242,14 @@ class SunlightControl(Thread):
                 if sch_len != len(self.active_schedules):
                     self.logger.debug(f'num of remaining schedules = {len(self.active_schedules)}')
                     sch_len = len(self.active_schedules)
-
             today_time = now.strftime('%H:%M:%S')  # draw per seconds
             if today_time != today_last_time:
                 today_last_time = today_time
-                with ThermoInfo(onewire_sn, tank_temp) as thermo:
-                    tank_temp = thermo.check()
+                temp_check_now = (int(time()) >> self.check_poll)
+                if temp_check_now > temp_checked:
+                    temp_checked = temp_check_now
+                    with ThermoInfo(onewire_sn, tank_temp) as thermo:
+                        tank_temp = thermo.check()
                 literal_outputs = self.draw_display(self.device,
                                                     draw_type,
                                                     self.format_watertemp(tank_temp[0]))
@@ -349,6 +353,8 @@ class SunlightControl(Thread):
         argParser.add_argument('-v', '--version', action='version', version='%s'%__VERSION__)
         argParser.add_argument('-c', '--configure', nargs='?', type=str, default=SETTING,
                                 help=f'config file that wrote by yaml describe params, see default={SETTING}')
+        argParser.add_argument('-l', '--logfile', nargs='?', type=str, default=JSON_LOGGING_PATH,
+                               help=f'logging file name as json described, see default={JSON_LOGGING_PATH}')
         return argParser.parse_args()
 
 

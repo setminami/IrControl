@@ -11,7 +11,8 @@ class ThermoInfo(OneWire):
     """
     call data from 1-wire Thermo Meter
     """
-    def temp(self, text):
+
+    def dev_depends_f(self, text):
         match = re.match(r".*t=(\d+)", text)
         if match:
             return float(match.group(1)) / 1000  # spec of 1-wire DS18B20

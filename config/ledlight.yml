@@ -61,6 +61,7 @@ TEMPERATURE_MANAGER:
   unit: Celsius #  Celsius | Fahrenheit (see TemperatureUnits)
   onewire_sn: ${ONEWIRE_SN}
   default_color: '#424242' # darkgray
+  polling: 5 # the sample means per 32secs, it is evaluated like this 2**(5)
   too_hot:
     temp: 26.0
     color: '#ff3333'
