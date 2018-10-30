@@ -370,4 +370,7 @@ fabric.properties
 # cProfiler file
 output.prof
 
+# pygame
+tmp.png
+
 # End of https://www.gitignore.io/api/ruby,macos,python,pycharm

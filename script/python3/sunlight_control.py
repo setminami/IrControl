@@ -17,7 +17,6 @@ from util.dump import DumpFile
 from util.device import SmartPlug
 
 if is_debug():
-    print('## the ENV Cannot use luma library ##')
     from display.dummy_for_macOS import get_device, canvas
 else:
     from luma.core.render import canvas
