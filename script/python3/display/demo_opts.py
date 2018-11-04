@@ -78,6 +78,7 @@ def get_device(actual_args=None):
         # https://github.com/rm-hull/luma.emulator/blob/master/luma/emulator/device.py
         # At this commit, latest pygame 1.9.4 + mojave 14.1 have some trouble that causes system crash.
         # https://github.com/pygame/pygame/issues/555
+        # TODO: replace emulator.capturte to emulator.pygame calling.
         return capture(width, height, 3, 'RGB', 'none', 6, file_template=IMG_OUTPUT)
 
 
@@ -89,6 +90,7 @@ class CustomCanvas(canvas):
         super().__init__(device, background, dither)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if not macOS():  # TODO: When pygame fixed mojave trouble, remove the debug switch.
+        if not macOS():
+            # TODO: When pygame or SDL fixed mojave trouble, remove the debug switch.
             self.image.save(IMG_OUTPUT)
         return super().__exit__(exc_type, exc_val, exc_tb)
