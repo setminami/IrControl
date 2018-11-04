@@ -16,12 +16,8 @@ from util.thermo_info import ThermoInfo, TempState
 from util.dump import DumpFile
 from util.device import SmartPlug
 
-if is_debug():
-    print('## the ENV Cannot use luma library ##')
-    from display.dummy_for_macOS import get_device, canvas
-else:
-    from luma.core.render import canvas
-    from display.demo_opts import get_device
+
+from display.demo_opts import get_device, CustomCanvas
 
 
 __VERSION__ = "1.1.1"
@@ -267,7 +263,7 @@ class SunlightControl(Thread):
 
     def draw_display(self, device, draw_type, temperature):
         temp, temp_color = temperature
-        with canvas(device) as draw:
+        with CustomCanvas(device) as draw:
             if draw_type == DrawType.CLOCK:
                 an_lineheight, margin, height_max, cx, base_angle, \
                     R, sch_plot_R, R_ratio, label_text, \
