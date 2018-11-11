@@ -75,7 +75,7 @@ class SunlightControl(Thread):
         self.live_update_params()
         self._timer = timer
         self.kill_received = False
-        super().__init__()
+        super().__init__(daemon=True)
 
     @property
     def timer(self):

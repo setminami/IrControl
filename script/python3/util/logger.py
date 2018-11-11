@@ -1,5 +1,4 @@
-import logging, pytz
-from datetime import datetime
+import logging
 from util import is_debug, JSON_LOGGING_PATH
 
 
