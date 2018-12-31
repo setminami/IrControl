@@ -219,6 +219,7 @@ class SunlightControl(Thread):
         display_name, dateform, timeform, sch_len, temp_checked = "", "", "", 0, 0
 
         while not self.kill_received:
+            error = self.PARAMS['TEMPERATURE_MANAGER']['error']
             if DEBUG:
                 snap1 = tracemalloc.take_snapshot()
             now = datetime.now(self.timer.timezone)
@@ -244,7 +245,7 @@ class SunlightControl(Thread):
                 temp_check_now = (int(time()) >> self.check_poll)
                 if temp_check_now > temp_checked:
                     temp_checked = temp_check_now
-                    with ThermoInfo(onewire_sn, tank_temp) as thermo:
+                    with ThermoInfo(onewire_sn, tank_temp, error) as thermo:
                         tank_temp = thermo.check()
                 literal_outputs = self.draw_display(self.device,
                                                     draw_type,
