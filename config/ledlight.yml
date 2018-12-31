@@ -34,10 +34,11 @@ KEY_CODE: # can select fix name ledlight as rgb ledlight
 TIMEZONE: 'Asia/Tokyo'
 
 SUNLIGHT_STATUS_API:
-  location: # the sample indices Edo-jou ruins in Tokyo
-    # https://www.google.co.jp/maps/place/%E6%B1%9F%E6%88%B8%E5%9F%8E%E8%B7%A1/@35.687747,139.7525013,17z/data=!3m1!4b1!4m5!3m4!1s0x60188c0b56209889:0xc4a3cc8d15146e69!8m2!3d35.687747!4d139.75469
-    latitude: 35.687747
-    longitude: 139.7525013
+  location: # the sample indices Indnesia Central Kalimantan
+    # rf. Buceraphandra Batangkawa
+    # https://www.google.co.jp/maps/place/Batangkawa,+Lamandau+Regency,+%E4%B8%AD%E3%82%AB%E3%83%AA%E3%83%9E%E3%83%B3%E3%82%BF%E3%83%B3+%E3%82%A4%E3%83%B3%E3%83%89%E3%83%8D%E3%82%B7%E3%82%A2/@-3.4558454,109.5784622,6.97z/data=!4m5!3m4!1s0x2e068443b3fc293b:0xe8b431fe7a826c3!8m2!3d-1.6711623!4d111.2368084?hl=en
+    latitude: -1.335681
+    longitude: 111.269319
   cache_update_freq_min: 30
 
 IFTTT: # [operations | reactions.x].anitem.remote selectable
@@ -207,8 +208,8 @@ TIMESHIFTS:
       shorten_name: noon
       color: '#F5F6CE'
     schedule:
-      time: sunrise
-      relative_time_sec: 5400 # 1.5h 
+      time: solar_noon
+      relative_time_sec: -3600 # 1.5h
     operations:
       - remote: IFTTT
         command: noonlight_on
