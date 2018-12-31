@@ -6,6 +6,7 @@
 # luma.oled
 # macOS preffer to install emulator, but raspi not need
 luma.emulator
+pygame==1.9.4
 
 # Profilers for PyCharm
 snakeviz

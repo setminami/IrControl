@@ -141,6 +141,9 @@ TIMESHIFTS:
       time: nautical_tw.begin
       relative_time_sec: 0
     operations:
+      - command: '0_0' # on
+        remote: ledlight
+        repeat: 3
       - command: '2_1' # purple
         remote: ledlight
         repeat: 3
@@ -153,6 +156,9 @@ TIMESHIFTS:
       time: civil_tw.begin
       relative_time_sec: 0
     operations:
+      - command: '0_0' # on
+        remote: ledlight
+        repeat: 3
       - command: '3_1' # light purple
         remote: ledlight
         repeat: 3
@@ -165,6 +171,9 @@ TIMESHIFTS:
       time: sunrise
       relative_time_sec: 0
     operations:
+      - command: '0_0' # on
+        remote: ledlight
+        repeat: 3
       - command: '4_1' # redly blue
         remote: ledlight
         repeat: 3
@@ -180,6 +189,9 @@ TIMESHIFTS:
       time: sunrise
       relative_time_sec: 3600
     operations:
+      - command: '0_0' # on
+        remote: ledlight
+        repeat: 3
       - command: '1_0' # white
         remote: ledlight
         repeat: 3
@@ -193,8 +205,8 @@ TIMESHIFTS:
       shorten_name: noon
       color: '#F5F6CE'
     schedule:
-      time: solar_noon
-      relative_time_sec: -3600
+      time: sunrise
+      relative_time_sec: 5400 # 1.5h 
     operations:
       - remote: IFTTT
         command: noonlight_on
@@ -206,8 +218,11 @@ TIMESHIFTS:
       color: '#F7D358'
     schedule:
       time: sunset
-      relative_time_sec: -5400 # -1.5h
+      relative_time_sec: -1800 # -0.5h
     operations:
+      - command: '0_0' # on
+        remote: ledlight
+        repeat: 3
       - command: '4_1' # redly blue
         remote: ledlight
         repeat: 3
@@ -223,6 +238,9 @@ TIMESHIFTS:
       time: sunset
       relative_time_sec: 0
     operations:
+      - command: '0_0' # on
+        remote: ledlight
+        repeat: 3
       - command: '5_1' # strong redly blue
         remote: ledlight
         repeat: 3
@@ -238,6 +256,9 @@ TIMESHIFTS:
       time: civil_tw.end
       relative_time_sec: 0
     operations:
+      - command: '0_0' # on
+        remote: ledlight
+        repeat: 3
       - command: '2_1' # purple
         remote: ledlight
         repeat: 3
@@ -253,9 +274,15 @@ TIMESHIFTS:
       time: astronomical_tw.end
       relative_time_sec: 0
     operations:
+      - command: '0_0' # on
+        remote: ledlight
+        repeat: 3
       - command: '1_1' # night blue
         remote: ledlight
         repeat: 3
+      - command: '0_2' # down
+        remote: ledlight
+        repeat: 16
 
 
 # below setting items are for Debug instead of raspberry pi running
