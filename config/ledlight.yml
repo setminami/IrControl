@@ -30,8 +30,10 @@ KEY_CODE: # can select fix name ledlight as rgb ledlight
     # "n/a" means no regitered to lircd or no use key
     # Or for use keep readability, when the controller keys are not layouted NxN square.
 
-# When you wanna search selectable TIMEZONE, run python -c "import pytz;[print(tz) for tz in pytz.all_timezones]"
-TIMEZONE: 'Asia/Tokyo'
+INSTALLATION:
+  location:
+    latitude: 35.712568
+    longitude: 139.751584
 
 SUNLIGHT_STATUS_API:
   location: # the sample indices Indnesia Central Kalimantan
@@ -78,7 +80,7 @@ TEMPERATURE_MANAGER:
           remote: IFTTT
           repeat: 3
   too_cold:
-    temp: 24.5
+    temp: 24.0
     color: '#0033ff'
     reactions:
       up:

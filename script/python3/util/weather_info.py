@@ -21,8 +21,7 @@ class WeatherInfo(object):
         self.SYS_TZ = pytz.timezone(sys_tz)
         now = datetime.now()
         sys_gap = self.SYS_TZ.utcoffset(now)
-        tz = tzwhere.tzwhere()
-        tzname_from_geoinfo = tz.tzNameAt(lat, lng)
+        tzname_from_geoinfo = tzwhere.tzwhere().tzNameAt(lat, lng)
         self.LOCAL_TZ = pytz.timezone(tzname_from_geoinfo)
         local_gap = self.LOCAL_TZ.utcoffset(now)
         self.TIME_GAP = sys_gap - local_gap  # timedelta
