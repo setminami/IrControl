@@ -12,10 +12,16 @@ class ThermoInfo(OneWire):
     call data from 1-wire Thermo Meter
     """
 
+    def __init__(self, rom_code, prev, error):
+        super().__init__(rom_code, prev)
+        self._error = float(error)
+        pass
+
     def dev_depends_f(self, text):
         match = re.match(r".*t=(\d+)", text)
         if match:
-            return float(match.group(1)) / 1000  # spec of 1-wire DS18B20
+            # spec of 1-wire DS18B20
+            return float(match.group(1)) / 1000 + self._error
         else:
             self.logger.error('1-wire device not setuped.')
             exit(1)

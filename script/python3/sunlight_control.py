@@ -6,6 +6,7 @@ import argparse, yaml, math, subprocess as sp
 from threading import Thread
 from datetime import datetime, timedelta
 from time import sleep, time
+from tzwhere import tzwhere
 
 from util import logger, is_debug, SETTING, JSON_LOGGING_PATH
 from util.env import expand_env, TemperatureUnits, DrawType
@@ -20,7 +21,7 @@ from util.device import SmartPlug
 from display.demo_opts import get_device, CustomCanvas
 
 
-__VERSION__ = "1.1.1"
+__VERSION__ = "1.1.2"
 
 DEBUG = False
 ENV_DEBUG = False
@@ -39,7 +40,7 @@ class SunlightControl(Thread):
         logger.debug(pre_msg)
 
         if __name__ == '__main__':
-            self.ARGS = SunlightControl.ArgParser()
+            self.ARGS = SunlightControl.arg_parser()
             self.config_path = self.ARGS.configure
             self.logging_path = self.ARGS.logfile
         else:
@@ -47,7 +48,7 @@ class SunlightControl(Thread):
             self.config_path = setting
 
         with open(self.config_path, "r") as f:
-            self.PARAMS = expand_env(yaml.load(f), ENV_DEBUG)
+            self.PARAMS = SunlightControl.synthesize_params(yaml.load(f))
 
         self.logger = logger.getChild(__class__.__name__)
         logger.debug('setuped child logger')
@@ -136,8 +137,8 @@ class SunlightControl(Thread):
         assert hasattr(self, '_device')
         return self._device
 
-    # operate transferred instance
     def _setup_weather_info(self, day):
+        """ operate transferred instance """
         # TODO: check memory usage
         timeshifts = 'TIMESHIFTS' if not is_debug() else 'TIMESHIFTS_for_debg'
         self._timer.weather = WeatherInfo(day, self.PARAMS['SUNLIGHT_STATUS_API'],
@@ -174,7 +175,7 @@ class SunlightControl(Thread):
         An item which expected realtime update, describe here istead of __init__
         """
         with open(self.config_path, "r") as f:
-            self.PARAMS = expand_env(yaml.load(f), ENV_DEBUG)
+            self.PARAMS = SunlightControl.synthesize_params(yaml.load(f))
 
         self.live_update_params()
         self._setup_weather_info(day)
@@ -219,6 +220,7 @@ class SunlightControl(Thread):
         display_name, dateform, timeform, sch_len, temp_checked = "", "", "", 0, 0
 
         while not self.kill_received:
+            error = self.PARAMS['TEMPERATURE_MANAGER']['error']
             if DEBUG:
                 snap1 = tracemalloc.take_snapshot()
             now = datetime.now(self.timer.timezone)
@@ -244,7 +246,7 @@ class SunlightControl(Thread):
                 temp_check_now = (int(time()) >> self.check_poll)
                 if temp_check_now > temp_checked:
                     temp_checked = temp_check_now
-                    with ThermoInfo(onewire_sn, tank_temp) as thermo:
+                    with ThermoInfo(onewire_sn, tank_temp, error) as thermo:
                         tank_temp = thermo.check()
                 literal_outputs = self.draw_display(self.device,
                                                     draw_type,
@@ -341,7 +343,23 @@ class SunlightControl(Thread):
                 ins.send_HTTP_trigger(command, repeat)
 
     @staticmethod
-    def ArgParser():
+    def _synthesize_installation(params):
+        if 'INSTALLATION' in params.keys():
+            installation = params['INSTALLATION']['location']
+            lat, lng = installation['latitude'], installation['longitude']
+            params.update({'TIMEZONE': tzwhere.tzwhere().tzNameAt(lat, lng)})
+        # invoice: local func make local PARAMS
+        return params
+
+    @staticmethod
+    def synthesize_params(params):
+        """ involve local update functions """
+        ret = expand_env(params)
+        ret = SunlightControl._synthesize_installation(ret)
+        return ret
+
+    @staticmethod
+    def arg_parser():
         argParser = argparse.ArgumentParser(prog=__file__,
                                             description='Control ledlight with infra-red remote',
                                             usage='%s -v -c [setting file name by yaml]'%__file__)

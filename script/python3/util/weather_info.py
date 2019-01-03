@@ -4,6 +4,7 @@
 import sys, requests, pytz, dateutil.parser
 import traceback, time
 from datetime import datetime, timedelta
+from tzwhere import tzwhere
 
 from .schedule import Schedule
 from . import logger
@@ -13,10 +14,17 @@ DEBUG = False
 
 class WeatherInfo(object):
 
-    def __init__(self, day: datetime, setting, schedule, tz):
-        self.PARAMS = {'latitude': setting['location']['latitude'], 'longitude': setting['location']['longitude']}
+    def __init__(self, day: datetime, setting, schedule, sys_tz):
+        lat, lng = setting['location']['latitude'], setting['location']['longitude']
+        self.PARAMS = {'latitude': lat, 'longitude': lng}
         self.update_min = setting['cache_update_freq_min']
-        self.TZ = pytz.timezone(tz)
+        self.SYS_TZ = pytz.timezone(sys_tz)
+        now = datetime.now()
+        sys_gap = self.SYS_TZ.utcoffset(now)
+        tzname_from_geoinfo = tzwhere.tzwhere().tzNameAt(lat, lng)
+        self.LOCAL_TZ = pytz.timezone(tzname_from_geoinfo)
+        local_gap = self.LOCAL_TZ.utcoffset(now)
+        self.TIME_GAP = sys_gap - local_gap  # timedelta
         self.TIMESHIFTS = schedule # TIMESHIFTS in yaml
         self._day = day
         self.logger = logger.getChild(__name__)
@@ -43,9 +51,10 @@ class WeatherInfo(object):
                     continue
 
     def _convByTZ(self, utcstr):
+        """ if it has timegap, absorb them in here """
         self.logger.debug(f'call {sys._getframe().f_code.co_name}({utcstr})')
         self.logger.debug(self._sunlights)
-        return dateutil.parser.parse(utcstr).astimezone(self.TZ)
+        return dateutil.parser.parse(utcstr).astimezone(self.SYS_TZ) - self.TIME_GAP
 
     def _recallAPI(self, f):
         if (not hasattr(self, 'fetched_result')) or \
@@ -89,7 +98,7 @@ class WeatherInfo(object):
                     start_time = datetime.strptime(time[0], '%Y-%m-%dT%H%M')
                 except:
                     try:
-                        start_time = datetime.now(self.TZ)
+                        start_time = datetime.now(self.SYS_TZ)
                     except :
                         traceback.print_exc()
                         print(f'Couldnt parse {time[0]}')
