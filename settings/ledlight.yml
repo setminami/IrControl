@@ -170,9 +170,6 @@ TIMESHIFTS:
       - command: '0_2' # down
         remote: ledlight
         repeat: 16
-      - remote: IFTTT
-        command: noonlight_off
-        repeat: 1 # because IFTTT is on TCP
 
   sunset:
     display:
@@ -186,9 +183,9 @@ TIMESHIFTS:
         remote: ledlight
         repeat: 3
       - remote: IFTTT
-        command: weaklight_off
+        command: noonlight_off
         repeat: 1 # because IFTTT is on TCP
-
+  
   twilight:
     display:
       shorten_name: TwLT
@@ -200,6 +197,10 @@ TIMESHIFTS:
       - command: '2_1' # purple
         remote: ledlight
         repeat: 3
+      - remote: IFTTT
+        command: weaklight_off
+        repeat: 1 # because IFTTT is on TCP
+
 
   moon:
     display:
